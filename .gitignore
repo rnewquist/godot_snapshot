@@ -1,0 +1,40 @@
+# Godot 4.x generated files & caches
+**/.godot/
+**/.import/
+*.translation
+**/override.cfg
+export_presets.cfg
+.mono/
+data_*/
+mono_crash.*.json
+
+# Generated GSS snapshots, recordings, screenshots, videos & test reports
+**/artifacts/
+*.gss.html
+*.gss.json
+*.gss.live.html
+*.gss.live.json
+*.avi
+*.mp4
+*.log
+
+# Python caches & virtual environments
+**/__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.venv/
+venv/
+
+# OS & editor files
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*.tmp
+.vscode/
+.idea/
+
+# Local workspace metadata
+.agents/
+.gdtest_projects.json

@@ -1,0 +1,72 @@
+[gd_scene load_steps=10 format=3]
+
+[ext_resource type="Script" path="res://modules/module_3d_particles.gd" id="1_ptc"]
+
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_fountain"]
+direction = Vector3(0, 1, 0)
+spread = 30.0
+initial_velocity_min = 4.0
+initial_velocity_max = 7.0
+gravity = Vector3(0, -9.8, 0)
+color = Color(1, 0.6, 0.1, 1)
+
+[sub_resource type="SphereMesh" id="SphereMesh_ptc"]
+radius = 0.06
+height = 0.12
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_ptc"]
+albedo_color = Color(1, 0.7, 0.2, 1)
+emission_enabled = true
+emission = Color(1, 0.6, 0.2, 1)
+emission_energy_multiplier = 2.0
+
+[sub_resource type="Curve3D" id="Curve3D_orbit"]
+_data = {
+"points": PackedVector3Array(0, 0, 0, 0, 0, 0, -2, 1.5, 0, 0, 0, -1, 0, 0, 1, 0, 2.5, 2, 0, 0, 0, 0, 0, 0, 2, 1.5, 0, 0, 0, 1, 0, 0, -1, 0, 0.5, -2, 0, 0, 0, 0, 0, 0, -2, 1.5, 0),
+"tilts": PackedFloat32Array(0, 0, 0, 0, 0)
+}
+point_count = 5
+
+[sub_resource type="BoxMesh" id="BoxMesh_drone"]
+size = Vector3(0.4, 0.2, 0.4)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_drone"]
+albedo_color = Color(0.2, 0.9, 0.7, 1)
+metallic = 0.8
+roughness = 0.2
+
+[sub_resource type="BoxMesh" id="BoxMesh_floor"]
+size = Vector3(6, 0.2, 6)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_floor"]
+albedo_color = Color(0.2, 0.22, 0.28, 1)
+roughness = 0.8
+
+[node name="Module3DParticles" type="Node3D"]
+script = ExtResource("1_ptc")
+
+[node name="Platform" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.1, 0)
+mesh = SubResource("BoxMesh_floor")
+surface_material_override/0 = SubResource("StandardMaterial3D_floor")
+
+[node name="GPUParticles3D" type="GPUParticles3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.2, 0)
+amount = 40
+lifetime = 1.5
+process_material = SubResource("ParticleProcessMaterial_fountain")
+draw_pass_1 = SubResource("SphereMesh_ptc")
+
+[node name="Path3D" type="Path3D" parent="."]
+curve = SubResource("Curve3D_orbit")
+
+[node name="PathFollow3D" type="PathFollow3D" parent="Path3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2, 1.5, 0)
+
+[node name="DroneMesh" type="MeshInstance3D" parent="Path3D/PathFollow3D"]
+mesh = SubResource("BoxMesh_drone")
+surface_material_override/0 = SubResource("StandardMaterial3D_drone")
+
+[node name="Decal" type="Decal" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.1, 0)
+size = Vector3(3, 1, 3)

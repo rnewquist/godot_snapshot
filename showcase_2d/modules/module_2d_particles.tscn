@@ -1,0 +1,115 @@
+[gd_scene load_steps=8 format=3]
+
+[ext_resource type="Script" path="res://modules/module_2d_particles.gd" id="1_ptc"]
+
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_fire"]
+emission_shape = 1
+emission_sphere_radius = 15.0
+direction = Vector3(0, -1, 0)
+spread = 25.0
+initial_velocity_min = 60.0
+initial_velocity_max = 120.0
+gravity = Vector3(0, -40, 0)
+scale_min = 4.0
+scale_max = 8.0
+color = Color(1, 0.5, 0.1, 0.9)
+
+[sub_resource type="Gradient" id="Gradient_line"]
+colors = PackedColorArray(0.1, 0.8, 1, 1, 0.9, 0.2, 0.8, 1)
+
+[sub_resource type="Curve" id="Curve_line"]
+_data = [Vector2(0, 0.2), 0.0, 0.0, 0, 0, Vector2(0.5, 1), 0.0, 0.0, 0, 0, Vector2(1, 0.2), 0.0, 0.0, 0, 0]
+point_count = 3
+
+[sub_resource type="Curve2D" id="Curve2D_orbit"]
+_data = {
+"points": PackedVector2Array(-50, -50, 50, -50, 0, -80, 50, -50, 50, 50, 100, 0, 50, 50, -50, 50, 0, 80, -50, 50, -50, -50, -100, 0, -50, -50, 50, -50, 0, -80)
+}
+point_count = 5
+
+[node name="Module2DParticles" type="Node2D"]
+script = ExtResource("1_ptc")
+
+[node name="Title" type="Label" parent="."]
+offset_left = 50.0
+offset_top = 70.0
+offset_right = 750.0
+offset_bottom = 100.0
+theme_override_font_sizes/font_size = 18
+text = "2D Geometry & FX: GPUParticles2D, Line2D (Gradient/Curves), Polygon2D & PathFollow2D"
+
+[node name="ParticleSection" type="Node2D" parent="."]
+position = Vector2(180, 360)
+
+[node name="GPUParticles2D" type="GPUParticles2D" parent="ParticleSection"]
+amount = 48
+lifetime = 1.2
+process_material = SubResource("ParticleProcessMaterial_fire")
+
+[node name="Label" type="Label" parent="ParticleSection"]
+offset_left = -80.0
+offset_top = 80.0
+offset_right = 80.0
+offset_bottom = 125.0
+text = "GPUParticles2D\n(Fire & Sparks)"
+horizontal_alignment = 1
+
+[node name="LineSection" type="Node2D" parent="."]
+position = Vector2(440, 260)
+
+[node name="Line2D" type="Line2D" parent="LineSection"]
+points = PackedVector2Array(-80, 80, -30, -60, 20, 60, 80, -80)
+width = 12.0
+width_curve = SubResource("Curve_line")
+gradient = SubResource("Gradient_line")
+joint_mode = 2
+begin_cap_mode = 2
+end_cap_mode = 2
+
+[node name="Label" type="Label" parent="LineSection"]
+offset_left = -90.0
+offset_top = 180.0
+offset_right = 90.0
+offset_bottom = 225.0
+text = "Line2D\n(Gradient & Width Curve)"
+horizontal_alignment = 1
+
+[node name="PolygonSection" type="Node2D" parent="."]
+position = Vector2(680, 320)
+
+[node name="Polygon2D" type="Polygon2D" parent="PolygonSection"]
+color = Color(0.2, 0.8, 0.6, 0.85)
+polygon = PackedVector2Array(-50, -50, 50, -40, 60, 50, -40, 60)
+
+[node name="Label" type="Label" parent="PolygonSection"]
+offset_left = -80.0
+offset_top = 120.0
+offset_right = 80.0
+offset_bottom = 165.0
+text = "Polygon2D\n(Deformable Geometry)"
+horizontal_alignment = 1
+
+[node name="PathSection" type="Node2D" parent="."]
+position = Vector2(940, 320)
+
+[node name="Path2D" type="Path2D" parent="PathSection"]
+curve = SubResource("Curve2D_orbit")
+
+[node name="PathFollow2D" type="PathFollow2D" parent="PathSection/Path2D"]
+position = Vector2(0, -80)
+rotation = 0.588
+
+[node name="DroneVisual" type="ColorRect" parent="PathSection/Path2D/PathFollow2D"]
+offset_left = -12.0
+offset_top = -12.0
+offset_right = 12.0
+offset_bottom = 12.0
+color = Color(1, 0.9, 0.2, 1)
+
+[node name="Label" type="Label" parent="PathSection"]
+offset_left = -90.0
+offset_top = 120.0
+offset_right = 90.0
+offset_bottom = 165.0
+text = "Path2D + PathFollow2D\n(Continuous Orbit)"
+horizontal_alignment = 1

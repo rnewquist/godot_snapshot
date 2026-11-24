@@ -1,0 +1,49 @@
+[gd_scene load_steps=9 format=3]
+
+[ext_resource type="Script" path="res://modules/module_navigation_ai.gd" id="1_nav"]
+
+[sub_resource type="NavigationMesh" id="NavigationMesh_demo"]
+vertices = PackedVector3Array(-4.5, 0.1, -4.5, -4.5, 0.1, 4.5, 4.5, 0.1, 4.5, 4.5, 0.1, -4.5)
+polygons = [PackedInt32Array(0, 1, 2, 3)]
+
+[sub_resource type="BoxMesh" id="BoxMesh_floor"]
+size = Vector3(10, 0.2, 10)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_floor"]
+albedo_color = Color(0.18, 0.22, 0.28, 1)
+
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_char"]
+radius = 0.3
+height = 1.0
+
+[sub_resource type="CapsuleMesh" id="CapsuleMesh_char"]
+radius = 0.3
+height = 1.0
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_char"]
+albedo_color = Color(0.2, 0.8, 0.9, 1)
+
+[node name="ModuleNavigationAI" type="Node3D"]
+script = ExtResource("1_nav")
+
+[node name="NavigationRegion3D" type="NavigationRegion3D" parent="."]
+navigation_mesh = SubResource("NavigationMesh_demo")
+
+[node name="Floor" type="MeshInstance3D" parent="NavigationRegion3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.1, 0)
+mesh = SubResource("BoxMesh_floor")
+surface_material_override/0 = SubResource("StandardMaterial3D_floor")
+
+[node name="Character" type="CharacterBody3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4, 0.5, 0)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Character"]
+shape = SubResource("CapsuleShape3D_char")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Character"]
+mesh = SubResource("CapsuleMesh_char")
+surface_material_override/0 = SubResource("StandardMaterial3D_char")
+
+[node name="NavigationAgent3D" type="NavigationAgent3D" parent="Character"]
+path_desired_distance = 0.5
+target_desired_distance = 0.5

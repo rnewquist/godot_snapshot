@@ -1,0 +1,334 @@
+[gd_scene load_steps=19 format=3]
+
+[ext_resource type="Script" path="res://modules/module_2d_physics.gd" id="1_phy"]
+
+[sub_resource type="PhysicsMaterial" id="PhysicsMaterial_bouncy"]
+bounce = 0.9
+
+[sub_resource type="PhysicsMaterial" id="PhysicsMaterial_dead"]
+bounce = 0.0
+
+[sub_resource type="PhysicsMaterial" id="PhysicsMaterial_ice"]
+friction = 0.0
+
+[sub_resource type="PhysicsMaterial" id="PhysicsMaterial_rubber"]
+friction = 1.0
+rough = true
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_ball"]
+radius = 24.0
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_box"]
+size = Vector2(36, 36)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_floor"]
+size = Vector2(250, 20)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_ramp"]
+size = Vector2(280, 20)
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_vortex"]
+radius = 120.0
+
+[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_char"]
+radius = 16.0
+height = 48.0
+
+[sub_resource type="SegmentShape2D" id="SegmentShape2D_rail"]
+a = Vector2(-50, -15)
+b = Vector2(50, 15)
+
+[sub_resource type="SeparationRayShape2D" id="SeparationRayShape2D_probe"]
+length = 32.0
+slide_on_slope = true
+
+[sub_resource type="WorldBoundaryShape2D" id="WorldBoundaryShape2D_floor"]
+normal = Vector2(0, -1)
+distance = 0.0
+
+[sub_resource type="ConvexPolygonShape2D" id="ConvexPolygonShape2D_wedge"]
+points = PackedVector2Array(-20, -20, 20, -20, 28, 20, -28, 20)
+
+[sub_resource type="ConcavePolygonShape2D" id="ConcavePolygonShape2D_cradle"]
+segments = PackedVector2Array(-50, 0, -20, 30, -20, 30, 20, 30, 20, 30, 50, 0)
+
+[node name="Module2DPhysics" type="Node2D"]
+script = ExtResource("1_phy")
+
+[node name="Title" type="Label" parent="."]
+offset_left = 50.0
+offset_top = 70.0
+offset_right = 1050.0
+offset_bottom = 100.0
+theme_override_font_sizes/font_size = 18
+text = "2D Physics: 8 Collision Shapes (Circle, Rect, Capsule, Segment, SepRay, WorldBoundary, Convex, Concave)"
+
+[node name="BounceFloor" type="StaticBody2D" parent="."]
+position = Vector2(200, 480)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="BounceFloor"]
+shape = SubResource("RectangleShape2D_floor")
+
+[node name="Visual" type="ColorRect" parent="BounceFloor"]
+offset_left = -125.0
+offset_top = -10.0
+offset_right = 125.0
+offset_bottom = 10.0
+color = Color(0.3, 0.35, 0.45, 1)
+
+[node name="BouncyBall" type="RigidBody2D" parent="."]
+position = Vector2(150, 160)
+physics_material_override = SubResource("PhysicsMaterial_bouncy")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="BouncyBall"]
+shape = SubResource("CircleShape2D_ball")
+
+[node name="Visual" type="ColorRect" parent="BouncyBall"]
+offset_left = -24.0
+offset_top = -24.0
+offset_right = 24.0
+offset_bottom = 24.0
+color = Color(0.2, 0.9, 0.4, 1)
+
+[node name="Label" type="Label" parent="BouncyBall"]
+offset_left = -40.0
+offset_top = -45.0
+offset_right = 40.0
+offset_bottom = -25.0
+text = "Bounce 0.9"
+horizontal_alignment = 1
+
+[node name="DeadBall" type="RigidBody2D" parent="."]
+position = Vector2(250, 160)
+physics_material_override = SubResource("PhysicsMaterial_dead")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="DeadBall"]
+shape = SubResource("CircleShape2D_ball")
+
+[node name="Visual" type="ColorRect" parent="DeadBall"]
+offset_left = -24.0
+offset_top = -24.0
+offset_right = 24.0
+offset_bottom = 24.0
+color = Color(0.9, 0.3, 0.3, 1)
+
+[node name="Label" type="Label" parent="DeadBall"]
+offset_left = -40.0
+offset_top = -45.0
+offset_right = 40.0
+offset_bottom = -25.0
+text = "Bounce 0.0"
+horizontal_alignment = 1
+
+[node name="FrictionRamp" type="Node2D" parent="."]
+position = Vector2(480, 320)
+
+[node name="RampBody" type="StaticBody2D" parent="FrictionRamp"]
+rotation = 0.523599
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="FrictionRamp/RampBody"]
+shape = SubResource("RectangleShape2D_ramp")
+
+[node name="Visual" type="ColorRect" parent="FrictionRamp/RampBody"]
+offset_left = -140.0
+offset_top = -10.0
+offset_right = 140.0
+offset_bottom = 10.0
+color = Color(0.35, 0.4, 0.5, 1)
+
+[node name="IceBox" type="RigidBody2D" parent="FrictionRamp"]
+position = Vector2(-70, -80)
+physics_material_override = SubResource("PhysicsMaterial_ice")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="FrictionRamp/IceBox"]
+shape = SubResource("RectangleShape2D_box")
+
+[node name="Visual" type="ColorRect" parent="FrictionRamp/IceBox"]
+offset_left = -18.0
+offset_top = -18.0
+offset_right = 18.0
+offset_bottom = 18.0
+color = Color(0.3, 0.7, 1, 1)
+
+[node name="RubberBox" type="RigidBody2D" parent="FrictionRamp"]
+position = Vector2(30, -30)
+physics_material_override = SubResource("PhysicsMaterial_rubber")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="FrictionRamp/RubberBox"]
+shape = SubResource("RectangleShape2D_box")
+
+[node name="Visual" type="ColorRect" parent="FrictionRamp/RubberBox"]
+offset_left = -18.0
+offset_top = -18.0
+offset_right = 18.0
+offset_bottom = 18.0
+color = Color(0.9, 0.6, 0.1, 1)
+
+[node name="RampLabel" type="Label" parent="FrictionRamp"]
+offset_left = -120.0
+offset_top = 130.0
+offset_right = 120.0
+offset_bottom = 175.0
+text = "Friction: Ice (0.0) vs Rubber (1.0)"
+horizontal_alignment = 1
+
+[node name="GravityVortex" type="Area2D" parent="."]
+position = Vector2(880, 240)
+gravity_space_override = 3
+gravity_point = true
+gravity_point_unit_distance = 60.0
+gravity = 600.0
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="GravityVortex"]
+shape = SubResource("CircleShape2D_vortex")
+
+[node name="Visual" type="ColorRect" parent="GravityVortex"]
+offset_left = -100.0
+offset_top = -100.0
+offset_right = 100.0
+offset_bottom = 100.0
+color = Color(0.4, 0.2, 0.8, 0.2)
+
+[node name="OrbitingDebris" type="RigidBody2D" parent="GravityVortex"]
+position = Vector2(70, -40)
+gravity_scale = 0.0
+linear_velocity = Vector2(0, 150)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="GravityVortex/OrbitingDebris"]
+shape = SubResource("CircleShape2D_ball")
+
+[node name="Visual" type="ColorRect" parent="GravityVortex/OrbitingDebris"]
+offset_left = -12.0
+offset_top = -12.0
+offset_right = 12.0
+offset_bottom = 12.0
+color = Color(0.9, 0.2, 0.9, 1)
+
+[node name="VortexLabel" type="Label" parent="GravityVortex"]
+offset_left = -120.0
+offset_top = 110.0
+offset_right = 120.0
+offset_bottom = 135.0
+text = "Area2D Gravity Vortex"
+horizontal_alignment = 1
+
+[node name="KinematicSection" type="Node2D" parent="."]
+position = Vector2(750, 480)
+
+[node name="Platform" type="StaticBody2D" parent="KinematicSection"]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="KinematicSection/Platform"]
+position = Vector2(150, 0)
+shape = SubResource("RectangleShape2D_floor")
+
+[node name="Visual" type="ColorRect" parent="KinematicSection/Platform"]
+offset_left = 25.0
+offset_top = -10.0
+offset_right = 275.0
+offset_bottom = 10.0
+color = Color(0.3, 0.35, 0.45, 1)
+
+[node name="CharacterBody2D" type="CharacterBody2D" parent="KinematicSection"]
+position = Vector2(100, -34)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="KinematicSection/CharacterBody2D"]
+shape = SubResource("CapsuleShape2D_char")
+
+[node name="Visual" type="ColorRect" parent="KinematicSection/CharacterBody2D"]
+offset_left = -16.0
+offset_top = -24.0
+offset_right = 16.0
+offset_bottom = 24.0
+color = Color(0.1, 0.8, 0.9, 1)
+
+[node name="Label" type="Label" parent="KinematicSection"]
+offset_left = 50.0
+offset_top = 30.0
+offset_right = 250.0
+offset_bottom = 55.0
+text = "Capsule: CharacterBody2D"
+horizontal_alignment = 1
+
+[node name="ConvexWedge" type="RigidBody2D" parent="."]
+position = Vector2(340, 180)
+mass = 3.0
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="ConvexWedge"]
+shape = SubResource("ConvexPolygonShape2D_wedge")
+
+[node name="Visual" type="Polygon2D" parent="ConvexWedge"]
+color = Color(0.9, 0.7, 0.2, 1)
+polygon = PackedVector2Array(-20, -20, 20, -20, 28, 20, -28, 20)
+
+[node name="Label" type="Label" parent="ConvexWedge"]
+offset_left = -40.0
+offset_top = -45.0
+offset_right = 40.0
+offset_bottom = -25.0
+text = "ConvexPoly"
+horizontal_alignment = 1
+
+[node name="ConcaveCradle" type="StaticBody2D" parent="."]
+position = Vector2(340, 480)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="ConcaveCradle"]
+shape = SubResource("ConcavePolygonShape2D_cradle")
+
+[node name="Visual" type="Line2D" parent="ConcaveCradle"]
+points = PackedVector2Array(-50, 0, -20, 30, 20, 30, 50, 0)
+width = 4.0
+default_color = Color(0.8, 0.4, 0.7, 1)
+
+[node name="Label" type="Label" parent="ConcaveCradle"]
+offset_left = -50.0
+offset_top = 35.0
+offset_right = 50.0
+offset_bottom = 60.0
+text = "ConcavePoly"
+horizontal_alignment = 1
+
+[node name="SegmentBarrier" type="StaticBody2D" parent="."]
+position = Vector2(590, 480)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="SegmentBarrier"]
+shape = SubResource("SegmentShape2D_rail")
+
+[node name="Visual" type="Line2D" parent="SegmentBarrier"]
+points = PackedVector2Array(-50, -15, 50, 15)
+width = 4.0
+default_color = Color(0.3, 0.85, 0.9, 1)
+
+[node name="Label" type="Label" parent="SegmentBarrier"]
+offset_left = -50.0
+offset_top = 25.0
+offset_right = 50.0
+offset_bottom = 50.0
+text = "SegmentShape"
+horizontal_alignment = 1
+
+[node name="HoverProbe" type="CharacterBody2D" parent="."]
+position = Vector2(620, 360)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="HoverProbe"]
+shape = SubResource("SeparationRayShape2D_probe")
+
+[node name="Visual" type="ColorRect" parent="HoverProbe"]
+offset_left = -12.0
+offset_top = -12.0
+offset_right = 12.0
+offset_bottom = 12.0
+color = Color(0.4, 0.9, 0.6, 1)
+
+[node name="Label" type="Label" parent="HoverProbe"]
+offset_left = -50.0
+offset_top = -35.0
+offset_right = 50.0
+offset_bottom = -15.0
+text = "SepRay"
+horizontal_alignment = 1
+
+[node name="WorldFloorBoundary" type="StaticBody2D" parent="."]
+position = Vector2(576, 560)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="WorldFloorBoundary"]
+shape = SubResource("WorldBoundaryShape2D_floor")

@@ -1,0 +1,115 @@
+name: GDTest CI Matrix
+
+on:
+  push:
+    branches: [ main, master, dev ]
+  pull_request:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test-headless:
+    name: GDTest Suite (Godot 4.3+ on ${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        godot-version: ['4.3-stable']
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          lfs: true
+
+      - name: Set up Python 3.x
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Setup Godot Engine (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          GODOT_URL="https://github.com/godotengine/godot/releases/download/${{ matrix.godot-version }}/Godot_v${{ matrix.godot-version }}_linux.x86_64.zip"
+          wget -q "$GODOT_URL" -O godot.zip
+          unzip -q godot.zip
+          mkdir -p bin
+          mv Godot_v${{ matrix.godot-version }}_linux.x86_64 bin/godot
+          chmod +x bin/godot
+          echo "$PWD/bin" >> $GITHUB_PATH
+          echo "GODOT_BIN=$PWD/bin/godot" >> $GITHUB_ENV
+
+      - name: Setup Godot Engine (macOS)
+        if: runner.os == 'macOS'
+        run: |
+          GODOT_URL="https://github.com/godotengine/godot/releases/download/${{ matrix.godot-version }}/Godot_v${{ matrix.godot-version }}_macos.universal.zip"
+          curl -sL "$GODOT_URL" -o godot.zip
+          unzip -q godot.zip
+          mkdir -p bin
+          cp Godot.app/Contents/MacOS/Godot bin/godot
+          chmod +x bin/godot
+          echo "$PWD/bin" >> $GITHUB_PATH
+          echo "GODOT_BIN=$PWD/bin/godot" >> $GITHUB_ENV
+
+      - name: Setup Godot Engine (Windows)
+        if: runner.os == 'Windows'
+        shell: bash
+        run: |
+          GODOT_URL="https://github.com/godotengine/godot/releases/download/${{ matrix.godot-version }}/Godot_v${{ matrix.godot-version }}_win64.exe.zip"
+          curl -sL "$GODOT_URL" -o godot.zip
+          unzip -q godot.zip
+          mkdir -p bin
+          mv Godot_v${{ matrix.godot-version }}_win64.exe bin/godot.exe
+          echo "$PWD/bin" >> $GITHUB_PATH
+          echo "GODOT_BIN=$PWD/bin/godot.exe" >> $GITHUB_ENV
+
+      - name: Initialize Godot Project Cache & Import Assets
+        shell: bash
+        run: |
+          echo "Running initial headless Godot pass for asset importing..."
+          godot --headless --editor --quit --path . || true
+
+      - name: Run GDTest 3.0 Test Suites via CLI
+        shell: bash
+        run: |
+          python3 tools/gdtest_cli.py run . --timeout 90
+
+      - name: Upload Test Results & Artifacts
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: gdtest-artifacts-${{ matrix.os }}
+          path: |
+            artifacts/test_results.json
+            artifacts/junit_report.xml
+            artifacts/audit_manifest.json
+            artifacts/checkpoints/
+            artifacts/*.log
+          if-no-files-found: warn
+
+      - name: Publish Test Summary
+        if: always()
+        shell: bash
+        run: |
+          if [ -f "artifacts/test_results.json" ]; then
+            python3 -c "
+          import json
+          with open('artifacts/test_results.json') as f:
+              data = json.load(f)
+          summary = data.get('summary', {})
+          print(f\"### 🧪 GDTest Results for \${{ matrix.os }}\")
+          print(f\"- **Total Suites**: {summary.get('total_suites', 0)}\")
+          print(f\"- **Passed Suites**: {summary.get('passed_suites', 0)}\")
+          print(f\"- **Failed Suites**: {summary.get('failed_suites', 0)}\")
+          print(f\"- **Total Tests**: {summary.get('total_tests', 0)}\")
+          print(f\"- **Passed Tests**: {summary.get('passed_tests', 0)}\")
+          print(f\"- **Failed Tests**: {summary.get('failed_tests', 0)}\")
+          print(f\"- **Total Assertions**: {summary.get('total_assertions', 0)}\")
+          print(f\"- **Duration**: {summary.get('total_duration_ms', 0):.2f} ms\")
+          " >> $GITHUB_STEP_SUMMARY
+          fi

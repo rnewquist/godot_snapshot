@@ -1,0 +1,12 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://modules/module_multiplayer_rpc.gd" id="1_net"]
+
+[node name="ModuleMultiplayerRPC" type="Node"]
+script = ExtResource("1_net")
+
+[node name="MultiplayerSpawner" type="MultiplayerSpawner" parent="."]
+_spawnable_scenes = PackedStringArray()
+spawn_path = NodePath("..")
+
+[node name="MultiplayerSynchronizer" type="MultiplayerSynchronizer" parent="."]

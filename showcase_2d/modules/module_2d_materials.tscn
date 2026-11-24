@@ -1,0 +1,154 @@
+[gd_scene load_steps=10 format=3]
+
+[ext_resource type="Script" path="res://modules/module_2d_materials.gd" id="1_mat"]
+
+[sub_resource type="CanvasItemMaterial" id="CanvasItemMaterial_mix"]
+
+[sub_resource type="CanvasItemMaterial" id="CanvasItemMaterial_add"]
+blend_mode = 1
+
+[sub_resource type="CanvasItemMaterial" id="CanvasItemMaterial_sub"]
+blend_mode = 2
+
+[sub_resource type="CanvasItemMaterial" id="CanvasItemMaterial_mul"]
+blend_mode = 3
+
+[sub_resource type="Gradient" id="Gradient_light"]
+colors = PackedColorArray(1, 1, 1, 1, 0, 0, 0, 0)
+
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_light"]
+gradient = SubResource("Gradient_light")
+width = 256
+height = 256
+fill = 1
+fill_from = Vector2(0.5, 0.5)
+fill_to = Vector2(0.5, 0)
+
+[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_box"]
+polygon = PackedVector2Array(-30, -30, 30, -30, 30, 30, -30, 30)
+
+[node name="Module2DMaterials" type="Node2D"]
+script = ExtResource("1_mat")
+
+[node name="Title" type="Label" parent="."]
+offset_left = 50.0
+offset_top = 70.0
+offset_right = 650.0
+offset_bottom = 100.0
+theme_override_font_sizes/font_size = 18
+text = "2D Blend Modes, Shaders & Real-Time Dynamic 2D Shadow Casting"
+
+[node name="BlendModeMix" type="Node2D" parent="."]
+position = Vector2(140, 210)
+
+[node name="Base" type="ColorRect" parent="BlendModeMix"]
+offset_left = -70.0
+offset_top = -70.0
+offset_right = 70.0
+offset_bottom = 70.0
+color = Color(0.2, 0.4, 0.8, 1)
+
+[node name="Layer" type="ColorRect" parent="BlendModeMix"]
+material = SubResource("CanvasItemMaterial_mix")
+offset_left = -35.0
+offset_top = -35.0
+offset_right = 35.0
+offset_bottom = 35.0
+color = Color(1, 0.3, 0.3, 0.7)
+
+[node name="Label" type="Label" parent="BlendModeMix"]
+offset_left = -80.0
+offset_top = 80.0
+offset_right = 80.0
+offset_bottom = 125.0
+text = "BLEND_MODE_MIX\n(Standard Alpha)"
+horizontal_alignment = 1
+
+[node name="BlendModeAdd" type="Node2D" parent="."]
+position = Vector2(360, 210)
+
+[node name="Base" type="ColorRect" parent="BlendModeAdd"]
+offset_left = -70.0
+offset_top = -70.0
+offset_right = 70.0
+offset_bottom = 70.0
+color = Color(0.2, 0.4, 0.8, 1)
+
+[node name="Layer" type="ColorRect" parent="BlendModeAdd"]
+material = SubResource("CanvasItemMaterial_add")
+offset_left = -35.0
+offset_top = -35.0
+offset_right = 35.0
+offset_bottom = 35.0
+color = Color(1, 0.5, 0.2, 1)
+
+[node name="Label" type="Label" parent="BlendModeAdd"]
+offset_left = -80.0
+offset_top = 80.0
+offset_right = 80.0
+offset_bottom = 125.0
+text = "BLEND_MODE_ADD\n(Glowing Fire/Laser)"
+horizontal_alignment = 1
+
+[node name="BlendModeSub" type="Node2D" parent="."]
+position = Vector2(580, 210)
+
+[node name="Base" type="ColorRect" parent="BlendModeSub"]
+offset_left = -70.0
+offset_top = -70.0
+offset_right = 70.0
+offset_bottom = 70.0
+color = Color(0.8, 0.8, 0.9, 1)
+
+[node name="Layer" type="ColorRect" parent="BlendModeSub"]
+material = SubResource("CanvasItemMaterial_sub")
+offset_left = -35.0
+offset_top = -35.0
+offset_right = 35.0
+offset_bottom = 35.0
+color = Color(0.4, 0.4, 0.4, 1)
+
+[node name="Label" type="Label" parent="BlendModeSub"]
+offset_left = -80.0
+offset_top = 80.0
+offset_right = 80.0
+offset_bottom = 125.0
+text = "BLEND_MODE_SUB\n(Shadow Burn)"
+horizontal_alignment = 1
+
+[node name="LightingRig" type="Node2D" parent="."]
+
+[node name="ShadowBackdrop" type="ColorRect" parent="LightingRig"]
+offset_left = 720.0
+offset_top = 130.0
+offset_right = 1080.0
+offset_bottom = 590.0
+color = Color(0.12, 0.14, 0.2, 1)
+
+[node name="LightOccluder2D" type="LightOccluder2D" parent="LightingRig"]
+position = Vector2(850, 300)
+occluder = SubResource("OccluderPolygon2D_box")
+
+[node name="ObstacleVisual" type="ColorRect" parent="LightingRig/LightOccluder2D"]
+offset_left = -30.0
+offset_top = -30.0
+offset_right = 30.0
+offset_bottom = 30.0
+color = Color(0.85, 0.3, 0.3, 1)
+
+[node name="PointLight2D" type="PointLight2D" parent="LightingRig"]
+position = Vector2(950, 250)
+color = Color(1, 0.85, 0.4, 1)
+energy = 1.8
+shadow_enabled = true
+shadow_color = Color(0, 0, 0, 0.75)
+texture = SubResource("GradientTexture2D_light")
+texture_scale = 3.0
+
+[node name="ShadowLabel" type="Label" parent="LightingRig"]
+offset_left = 730.0
+offset_top = 540.0
+offset_right = 1070.0
+offset_bottom = 580.0
+text = "Dynamic PointLight2D + LightOccluder2D\n(Real-Time 2D Shadow Casting)"
+horizontal_alignment = 1

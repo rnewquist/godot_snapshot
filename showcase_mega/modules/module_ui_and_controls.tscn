@@ -1,0 +1,91 @@
+[gd_scene format=3 uid="uid://c7m9x4q9d2controls"]
+
+[ext_resource type="Script" path="res://modules/module_ui_and_controls.gd" id="1_script"]
+
+[node name="ModuleUIAndControls" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_script")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 20.0
+offset_top = 20.0
+offset_right = -20.0
+offset_bottom = -20.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 12
+
+[node name="RichLabel" type="RichTextLabel" parent="VBoxContainer"]
+custom_minimum_size = Vector2(0, 30)
+layout_mode = 2
+bbcode_enabled = true
+text = "UI Hierarchy Header"
+
+[node name="HBoxContainer" type="HBoxContainer" parent="VBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="ActionButton" type="Button" parent="VBoxContainer/HBoxContainer"]
+custom_minimum_size = Vector2(140, 36)
+layout_mode = 2
+text = "Action Button"
+
+[node name="StateCheckBox" type="CheckBox" parent="VBoxContainer/HBoxContainer"]
+layout_mode = 2
+text = "Toggle State"
+
+[node name="DropdownOptions" type="OptionButton" parent="VBoxContainer/HBoxContainer"]
+custom_minimum_size = Vector2(160, 36)
+layout_mode = 2
+
+[node name="SliderContainer" type="HBoxContainer" parent="VBoxContainer"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="VBoxContainer/SliderContainer"]
+custom_minimum_size = Vector2(100, 0)
+layout_mode = 2
+text = "Value Slider:"
+
+[node name="ValueSlider" type="HSlider" parent="VBoxContainer/SliderContainer"]
+custom_minimum_size = Vector2(300, 24)
+layout_mode = 2
+size_flags_horizontal = 3
+max_value = 100.0
+step = 1.0
+
+[node name="InputContainer" type="HBoxContainer" parent="VBoxContainer"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="VBoxContainer/InputContainer"]
+custom_minimum_size = Vector2(100, 0)
+layout_mode = 2
+text = "Text Input:"
+
+[node name="TextInput" type="LineEdit" parent="VBoxContainer/InputContainer"]
+custom_minimum_size = Vector2(250, 32)
+layout_mode = 2
+size_flags_horizontal = 3
+placeholder_text = "Type text here..."
+
+[node name="SplitView" type="HSplitContainer" parent="VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="TreeView" type="Tree" parent="VBoxContainer/SplitView"]
+custom_minimum_size = Vector2(200, 150)
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="ItemList" type="ItemList" parent="VBoxContainer/SplitView"]
+custom_minimum_size = Vector2(200, 150)
+layout_mode = 2
+size_flags_horizontal = 3

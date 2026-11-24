@@ -1,0 +1,36 @@
+# Auto-detect text files and normalize line endings to LF
+* text=auto eol=lf
+
+# Godot & GDScript files
+*.gd text eol=lf
+*.tscn text eol=lf
+*.tres text eol=lf
+*.godot text eol=lf
+*.cfg text eol=lf
+
+# Data & Config files
+*.json text eol=lf
+*.xml text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf
+*.toml text eol=lf
+*.ini text eol=lf
+*.md text eol=lf
+*.txt text eol=lf
+*.py text eol=lf
+*.sh text eol=lf
+
+# Binary files
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.svg text eol=lf
+*.ico binary
+*.webp binary
+*.wav binary
+*.ogg binary
+*.mp3 binary
+*.ttf binary
+*.otf binary
+*.pck binary
+*.zip binary

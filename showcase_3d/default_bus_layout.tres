@@ -1,0 +1,389 @@
+[gd_resource type="AudioBusLayout" load_steps=26 format=3]
+
+[sub_resource type="AudioEffectSpectrumAnalyzer" id="AudioEffectSpectrumAnalyzer_master"]
+resource_name = "AudioEffectSpectrumAnalyzer"
+buffer_length = 2.0
+tap_back_pos = 0.01
+fft_size = 3
+
+[sub_resource type="AudioEffectReverb" id="AudioEffectReverb_sfx"]
+resource_name = "AudioEffectReverb"
+room_size = 0.7
+damping = 0.5
+spread = 0.8
+dry = 0.8
+wet = 0.5
+
+[sub_resource type="AudioEffectDelay" id="AudioEffectDelay_music"]
+resource_name = "AudioEffectDelay"
+dry = 0.7
+tap1_delay_ms = 250.0
+tap1_level_db = -6.0
+
+[sub_resource type="AudioEffectLowPassFilter" id="AudioEffectLowPassFilter_filter"]
+resource_name = "AudioEffectLowPassFilter"
+cutoff_hz = 1200.0
+resonance = 0.5
+
+[sub_resource type="AudioEffectReverb" id="AudioEffectReverb_reverb"]
+resource_name = "AudioEffectReverb"
+room_size = 0.8
+damping = 0.4
+spread = 0.9
+
+[sub_resource type="AudioEffectDelay" id="AudioEffectDelay_delay"]
+resource_name = "AudioEffectDelay"
+tap1_delay_ms = 300.0
+tap1_level_db = -4.0
+
+[sub_resource type="AudioEffectLowPassFilter" id="AudioEffectLowPassFilter_lowpass"]
+resource_name = "AudioEffectLowPassFilter"
+cutoff_hz = 1500.0
+resonance = 0.6
+
+[sub_resource type="AudioEffectHighPassFilter" id="AudioEffectHighPassFilter_highpass"]
+resource_name = "AudioEffectHighPassFilter"
+cutoff_hz = 400.0
+resonance = 0.5
+
+[sub_resource type="AudioEffectBandPassFilter" id="AudioEffectBandPassFilter_bandpass"]
+resource_name = "AudioEffectBandPassFilter"
+cutoff_hz = 1000.0
+resonance = 0.5
+
+[sub_resource type="AudioEffectBandLimitFilter" id="AudioEffectBandLimitFilter_bandlimit"]
+resource_name = "AudioEffectBandLimitFilter"
+cutoff_hz = 2000.0
+resonance = 0.5
+
+[sub_resource type="AudioEffectNotchFilter" id="AudioEffectNotchFilter_notch"]
+resource_name = "AudioEffectNotchFilter"
+cutoff_hz = 800.0
+resonance = 0.5
+
+[sub_resource type="AudioEffectLowShelfFilter" id="AudioEffectLowShelfFilter_lowshelf"]
+resource_name = "AudioEffectLowShelfFilter"
+cutoff_hz = 250.0
+gain_db = 3.0
+
+[sub_resource type="AudioEffectHighShelfFilter" id="AudioEffectHighShelfFilter_highshelf"]
+resource_name = "AudioEffectHighShelfFilter"
+cutoff_hz = 4000.0
+gain_db = -2.0
+
+[sub_resource type="AudioEffectChorus" id="AudioEffectChorus_chorus"]
+resource_name = "AudioEffectChorus"
+voice_count = 2
+dry = 0.8
+wet = 0.5
+
+[sub_resource type="AudioEffectDistortion" id="AudioEffectDistortion_distortion"]
+resource_name = "AudioEffectDistortion"
+mode = 0
+drive = 0.4
+
+[sub_resource type="AudioEffectPitchShift" id="AudioEffectPitchShift_pitchshift"]
+resource_name = "AudioEffectPitchShift"
+pitch_scale = 1.2
+
+[sub_resource type="AudioEffectPhaser" id="AudioEffectPhaser_phaser"]
+resource_name = "AudioEffectPhaser"
+range_min_hz = 440.0
+range_max_hz = 1600.0
+rate_hz = 0.5
+
+[sub_resource type="AudioEffectEQ6" id="AudioEffectEQ6_eq6"]
+resource_name = "AudioEffectEQ6"
+
+[sub_resource type="AudioEffectEQ10" id="AudioEffectEQ10_eq10"]
+resource_name = "AudioEffectEQ10"
+
+[sub_resource type="AudioEffectEQ21" id="AudioEffectEQ21_eq21"]
+resource_name = "AudioEffectEQ21"
+
+[sub_resource type="AudioEffectCompressor" id="AudioEffectCompressor_compressor"]
+resource_name = "AudioEffectCompressor"
+threshold = -12.0
+ratio = 4.0
+
+[sub_resource type="AudioEffectLimiter" id="AudioEffectLimiter_limiter"]
+resource_name = "AudioEffectLimiter"
+ceiling_db = -0.5
+threshold_db = 0.0
+
+[sub_resource type="AudioEffectPanner" id="AudioEffectPanner_panner"]
+resource_name = "AudioEffectPanner"
+pan = 0.0
+
+[sub_resource type="AudioEffectStereoEnhance" id="AudioEffectStereoEnhance_stereo"]
+resource_name = "AudioEffectStereoEnhance"
+pan_pullout = 1.5
+time_pullout_ms = 10.0
+
+[sub_resource type="AudioEffectSpectrumAnalyzer" id="AudioEffectSpectrumAnalyzer_spec"]
+resource_name = "AudioEffectSpectrumAnalyzer"
+buffer_length = 2.0
+tap_back_pos = 0.01
+
+[sub_resource type="AudioEffectCapture" id="AudioEffectCapture_capture"]
+resource_name = "AudioEffectCapture"
+buffer_length_frames = 1024
+
+[sub_resource type="AudioEffectRecord" id="AudioEffectRecord_record"]
+resource_name = "AudioEffectRecord"
+
+[sub_resource type="AudioEffectAmplify" id="AudioEffectAmplify_amplify"]
+resource_name = "AudioEffectAmplify"
+volume_db = 0.0
+
+[resource]
+bus/0/name = &"Master"
+bus/0/solo = false
+bus/0/mute = false
+bus/0/bypass_fx = false
+bus/0/volume_db = 0.0
+bus/0/effect/0/effect = SubResource("AudioEffectSpectrumAnalyzer_master")
+bus/0/effect/0/enabled = true
+
+bus/1/name = &"SFX"
+bus/1/solo = false
+bus/1/mute = false
+bus/1/bypass_fx = false
+bus/1/volume_db = 0.0
+bus/1/send = &"Master"
+bus/1/effect/0/effect = SubResource("AudioEffectReverb_sfx")
+bus/1/effect/0/enabled = true
+
+bus/2/name = &"Music"
+bus/2/solo = false
+bus/2/mute = false
+bus/2/bypass_fx = false
+bus/2/volume_db = -3.0
+bus/2/send = &"Master"
+bus/2/effect/0/effect = SubResource("AudioEffectDelay_music")
+bus/2/effect/0/enabled = true
+
+bus/3/name = &"Filtered"
+bus/3/solo = false
+bus/3/mute = false
+bus/3/bypass_fx = false
+bus/3/volume_db = 0.0
+bus/3/send = &"Master"
+bus/3/effect/0/effect = SubResource("AudioEffectLowPassFilter_filter")
+bus/3/effect/0/enabled = true
+
+bus/4/name = &"ReverbBus"
+bus/4/solo = false
+bus/4/mute = false
+bus/4/bypass_fx = false
+bus/4/volume_db = 0.0
+bus/4/send = &"Master"
+bus/4/effect/0/effect = SubResource("AudioEffectReverb_reverb")
+bus/4/effect/0/enabled = true
+
+bus/5/name = &"DelayBus"
+bus/5/solo = false
+bus/5/mute = false
+bus/5/bypass_fx = false
+bus/5/volume_db = 0.0
+bus/5/send = &"Master"
+bus/5/effect/0/effect = SubResource("AudioEffectDelay_delay")
+bus/5/effect/0/enabled = true
+
+bus/6/name = &"LowPassBus"
+bus/6/solo = false
+bus/6/mute = false
+bus/6/bypass_fx = false
+bus/6/volume_db = 0.0
+bus/6/send = &"Master"
+bus/6/effect/0/effect = SubResource("AudioEffectLowPassFilter_lowpass")
+bus/6/effect/0/enabled = true
+
+bus/7/name = &"HighPassBus"
+bus/7/solo = false
+bus/7/mute = false
+bus/7/bypass_fx = false
+bus/7/volume_db = 0.0
+bus/7/send = &"Master"
+bus/7/effect/0/effect = SubResource("AudioEffectHighPassFilter_highpass")
+bus/7/effect/0/enabled = true
+
+bus/8/name = &"BandPassBus"
+bus/8/solo = false
+bus/8/mute = false
+bus/8/bypass_fx = false
+bus/8/volume_db = 0.0
+bus/8/send = &"Master"
+bus/8/effect/0/effect = SubResource("AudioEffectBandPassFilter_bandpass")
+bus/8/effect/0/enabled = true
+
+bus/9/name = &"BandLimitBus"
+bus/9/solo = false
+bus/9/mute = false
+bus/9/bypass_fx = false
+bus/9/volume_db = 0.0
+bus/9/send = &"Master"
+bus/9/effect/0/effect = SubResource("AudioEffectBandLimitFilter_bandlimit")
+bus/9/effect/0/enabled = true
+
+bus/10/name = &"NotchBus"
+bus/10/solo = false
+bus/10/mute = false
+bus/10/bypass_fx = false
+bus/10/volume_db = 0.0
+bus/10/send = &"Master"
+bus/10/effect/0/effect = SubResource("AudioEffectNotchFilter_notch")
+bus/10/effect/0/enabled = true
+
+bus/11/name = &"LowShelfBus"
+bus/11/solo = false
+bus/11/mute = false
+bus/11/bypass_fx = false
+bus/11/volume_db = 0.0
+bus/11/send = &"Master"
+bus/11/effect/0/effect = SubResource("AudioEffectLowShelfFilter_lowshelf")
+bus/11/effect/0/enabled = true
+
+bus/12/name = &"HighShelfBus"
+bus/12/solo = false
+bus/12/mute = false
+bus/12/bypass_fx = false
+bus/12/volume_db = 0.0
+bus/12/send = &"Master"
+bus/12/effect/0/effect = SubResource("AudioEffectHighShelfFilter_highshelf")
+bus/12/effect/0/enabled = true
+
+bus/13/name = &"ChorusBus"
+bus/13/solo = false
+bus/13/mute = false
+bus/13/bypass_fx = false
+bus/13/volume_db = 0.0
+bus/13/send = &"Master"
+bus/13/effect/0/effect = SubResource("AudioEffectChorus_chorus")
+bus/13/effect/0/enabled = true
+
+bus/14/name = &"DistortionBus"
+bus/14/solo = false
+bus/14/mute = false
+bus/14/bypass_fx = false
+bus/14/volume_db = 0.0
+bus/14/send = &"Master"
+bus/14/effect/0/effect = SubResource("AudioEffectDistortion_distortion")
+bus/14/effect/0/enabled = true
+
+bus/15/name = &"PitchShiftBus"
+bus/15/solo = false
+bus/15/mute = false
+bus/15/bypass_fx = false
+bus/15/volume_db = 0.0
+bus/15/send = &"Master"
+bus/15/effect/0/effect = SubResource("AudioEffectPitchShift_pitchshift")
+bus/15/effect/0/enabled = true
+
+bus/16/name = &"PhaserBus"
+bus/16/solo = false
+bus/16/mute = false
+bus/16/bypass_fx = false
+bus/16/volume_db = 0.0
+bus/16/send = &"Master"
+bus/16/effect/0/effect = SubResource("AudioEffectPhaser_phaser")
+bus/16/effect/0/enabled = true
+
+bus/17/name = &"EQ6Bus"
+bus/17/solo = false
+bus/17/mute = false
+bus/17/bypass_fx = false
+bus/17/volume_db = 0.0
+bus/17/send = &"Master"
+bus/17/effect/0/effect = SubResource("AudioEffectEQ6_eq6")
+bus/17/effect/0/enabled = true
+
+bus/18/name = &"EQ10Bus"
+bus/18/solo = false
+bus/18/mute = false
+bus/18/bypass_fx = false
+bus/18/volume_db = 0.0
+bus/18/send = &"Master"
+bus/18/effect/0/effect = SubResource("AudioEffectEQ10_eq10")
+bus/18/effect/0/enabled = true
+
+bus/19/name = &"EQ21Bus"
+bus/19/solo = false
+bus/19/mute = false
+bus/19/bypass_fx = false
+bus/19/volume_db = 0.0
+bus/19/send = &"Master"
+bus/19/effect/0/effect = SubResource("AudioEffectEQ21_eq21")
+bus/19/effect/0/enabled = true
+
+bus/20/name = &"CompressorBus"
+bus/20/solo = false
+bus/20/mute = false
+bus/20/bypass_fx = false
+bus/20/volume_db = 0.0
+bus/20/send = &"Master"
+bus/20/effect/0/effect = SubResource("AudioEffectCompressor_compressor")
+bus/20/effect/0/enabled = true
+
+bus/21/name = &"LimiterBus"
+bus/21/solo = false
+bus/21/mute = false
+bus/21/bypass_fx = false
+bus/21/volume_db = 0.0
+bus/21/send = &"Master"
+bus/21/effect/0/effect = SubResource("AudioEffectLimiter_limiter")
+bus/21/effect/0/enabled = true
+
+bus/22/name = &"PannerBus"
+bus/22/solo = false
+bus/22/mute = false
+bus/22/bypass_fx = false
+bus/22/volume_db = 0.0
+bus/22/send = &"Master"
+bus/22/effect/0/effect = SubResource("AudioEffectPanner_panner")
+bus/22/effect/0/enabled = true
+
+bus/23/name = &"StereoEnhanceBus"
+bus/23/solo = false
+bus/23/mute = false
+bus/23/bypass_fx = false
+bus/23/volume_db = 0.0
+bus/23/send = &"Master"
+bus/23/effect/0/effect = SubResource("AudioEffectStereoEnhance_stereo")
+bus/23/effect/0/enabled = true
+
+bus/24/name = &"SpectrumBus"
+bus/24/solo = false
+bus/24/mute = false
+bus/24/bypass_fx = false
+bus/24/volume_db = 0.0
+bus/24/send = &"Master"
+bus/24/effect/0/effect = SubResource("AudioEffectSpectrumAnalyzer_spec")
+bus/24/effect/0/enabled = true
+
+bus/25/name = &"CaptureBus"
+bus/25/solo = false
+bus/25/mute = false
+bus/25/bypass_fx = false
+bus/25/volume_db = 0.0
+bus/25/send = &"Master"
+bus/25/effect/0/effect = SubResource("AudioEffectCapture_capture")
+bus/25/effect/0/enabled = true
+
+bus/26/name = &"RecordBus"
+bus/26/solo = false
+bus/26/mute = false
+bus/26/bypass_fx = false
+bus/26/volume_db = 0.0
+bus/26/send = &"Master"
+bus/26/effect/0/effect = SubResource("AudioEffectRecord_record")
+bus/26/effect/0/enabled = true
+
+bus/27/name = &"AmplifyBus"
+bus/27/solo = false
+bus/27/mute = false
+bus/27/bypass_fx = false
+bus/27/volume_db = 0.0
+bus/27/send = &"Master"
+bus/27/effect/0/effect = SubResource("AudioEffectAmplify_amplify")
+bus/27/effect/0/enabled = true

@@ -1,0 +1,187 @@
+[gd_scene load_steps=8 format=3]
+
+[ext_resource type="Script" path="res://modules/module_2d_joints.gd" id="1_jnt"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_anchor"]
+radius = 8.0
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_bob"]
+radius = 20.0
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_weight"]
+size = Vector2(36, 36)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_piston"]
+size = Vector2(28, 28)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_target"]
+size = Vector2(40, 100)
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_cast"]
+radius = 16.0
+
+[node name="Module2DJoints" type="Node2D"]
+script = ExtResource("1_jnt")
+
+[node name="Title" type="Label" parent="."]
+offset_left = 50.0
+offset_top = 70.0
+offset_right = 850.0
+offset_bottom = 100.0
+theme_override_font_sizes/font_size = 18
+text = "2D Constraints & Probing: PinJoint2D, DampedSpringJoint2D, GrooveJoint2D, RayCast2D & ShapeCast2D"
+
+[node name="PinSection" type="Node2D" parent="."]
+
+[node name="PinAnchor" type="StaticBody2D" parent="PinSection"]
+position = Vector2(160, 200)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="PinSection/PinAnchor"]
+shape = SubResource("CircleShape2D_anchor")
+
+[node name="PinBob" type="RigidBody2D" parent="PinSection"]
+position = Vector2(240, 260)
+mass = 5.0
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="PinSection/PinBob"]
+shape = SubResource("CircleShape2D_bob")
+
+[node name="Visual" type="ColorRect" parent="PinSection/PinBob"]
+offset_left = -20.0
+offset_top = -20.0
+offset_right = 20.0
+offset_bottom = 20.0
+color = Color(0.3, 0.7, 0.9, 1)
+
+[node name="PinJoint2D" type="PinJoint2D" parent="PinSection"]
+position = Vector2(160, 200)
+node_a = NodePath("../PinAnchor")
+node_b = NodePath("../PinBob")
+
+[node name="Label" type="Label" parent="PinSection"]
+offset_left = 90.0
+offset_top = 400.0
+offset_right = 230.0
+offset_bottom = 445.0
+text = "PinJoint2D\n(Pendulum Pivot)"
+horizontal_alignment = 1
+
+[node name="SpringSection" type="Node2D" parent="."]
+
+[node name="SpringAnchor" type="StaticBody2D" parent="SpringSection"]
+position = Vector2(420, 180)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="SpringSection/SpringAnchor"]
+shape = SubResource("CircleShape2D_anchor")
+
+[node name="SpringWeight" type="RigidBody2D" parent="SpringSection"]
+position = Vector2(420, 300)
+mass = 2.0
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="SpringSection/SpringWeight"]
+shape = SubResource("RectangleShape2D_weight")
+
+[node name="Visual" type="ColorRect" parent="SpringSection/SpringWeight"]
+offset_left = -18.0
+offset_top = -18.0
+offset_right = 18.0
+offset_bottom = 18.0
+color = Color(0.9, 0.3, 0.4, 1)
+
+[node name="DampedSpringJoint2D" type="DampedSpringJoint2D" parent="SpringSection"]
+position = Vector2(420, 180)
+node_a = NodePath("../SpringAnchor")
+node_b = NodePath("../SpringWeight")
+length = 120.0
+rest_length = 100.0
+stiffness = 40.0
+damping = 2.5
+
+[node name="Label" type="Label" parent="SpringSection"]
+offset_left = 340.0
+offset_top = 400.0
+offset_right = 500.0
+offset_bottom = 445.0
+text = "DampedSpringJoint2D\n(Suspension Oscillation)"
+horizontal_alignment = 1
+
+[node name="GrooveSection" type="Node2D" parent="."]
+
+[node name="GrooveBase" type="StaticBody2D" parent="GrooveSection"]
+position = Vector2(680, 200)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="GrooveSection/GrooveBase"]
+shape = SubResource("CircleShape2D_anchor")
+
+[node name="GroovePiston" type="RigidBody2D" parent="GrooveSection"]
+position = Vector2(680, 260)
+gravity_scale = 1.5
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="GrooveSection/GroovePiston"]
+shape = SubResource("RectangleShape2D_piston")
+
+[node name="Visual" type="ColorRect" parent="GrooveSection/GroovePiston"]
+offset_left = -14.0
+offset_top = -14.0
+offset_right = 14.0
+offset_bottom = 14.0
+color = Color(0.3, 0.9, 0.5, 1)
+
+[node name="GrooveJoint2D" type="GrooveJoint2D" parent="GrooveSection"]
+position = Vector2(680, 200)
+node_a = NodePath("../GrooveBase")
+node_b = NodePath("../GroovePiston")
+length = 150.0
+initial_offset = 60.0
+
+[node name="Label" type="Label" parent="GrooveSection"]
+offset_left = 610.0
+offset_top = 400.0
+offset_right = 750.0
+offset_bottom = 445.0
+text = "GrooveJoint2D\n(Linear Piston Rail)"
+horizontal_alignment = 1
+
+[node name="RaySection" type="Node2D" parent="."]
+position = Vector2(920, 260)
+
+[node name="RayCast2D" type="RayCast2D" parent="RaySection"]
+target_position = Vector2(200, 0)
+collision_mask = 1
+
+[node name="LaserLine" type="Line2D" parent="RaySection"]
+points = PackedVector2Array(0, 0, 200, 0)
+width = 3.0
+default_color = Color(0.2, 1, 0.4, 0.9)
+
+[node name="TargetObstacle" type="StaticBody2D" parent="RaySection"]
+position = Vector2(100, 0)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="RaySection/TargetObstacle"]
+shape = SubResource("RectangleShape2D_target")
+
+[node name="Visual" type="ColorRect" parent="RaySection/TargetObstacle"]
+offset_left = -20.0
+offset_top = -50.0
+offset_right = 20.0
+offset_bottom = 50.0
+color = Color(0.8, 0.3, 0.2, 1)
+
+[node name="ShapeCast2D" type="ShapeCast2D" parent="RaySection"]
+position = Vector2(0, 80)
+shape = SubResource("CircleShape2D_cast")
+target_position = Vector2(180, 0)
+
+[node name="ShapeLine" type="Line2D" parent="RaySection"]
+position = Vector2(0, 80)
+points = PackedVector2Array(0, 0, 180, 0)
+width = 2.0
+default_color = Color(0.4, 0.7, 1, 0.8)
+
+[node name="Label" type="Label" parent="RaySection"]
+offset_left = -50.0
+offset_top = 140.0
+offset_right = 180.0
+offset_bottom = 185.0
+text = "RayCast2D & ShapeCast2D\n(Swept Geometric Probing)"
+horizontal_alignment = 1

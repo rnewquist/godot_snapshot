@@ -1,0 +1,122 @@
+[gd_scene load_steps=14 format=3]
+
+[ext_resource type="Script" path="res://main_showcase_3d.gd" id="1_main"]
+[ext_resource type="PackedScene" path="res://modules/module_3d_materials.tscn" id="2_mat"]
+[ext_resource type="PackedScene" path="res://modules/module_3d_lighting.tscn" id="3_lit"]
+[ext_resource type="PackedScene" path="res://modules/module_3d_physics.tscn" id="4_phy"]
+[ext_resource type="PackedScene" path="res://modules/module_3d_joints.tscn" id="5_jnt"]
+[ext_resource type="PackedScene" path="res://modules/module_3d_particles.tscn" id="6_ptc"]
+
+[sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_sky"]
+sky_top_color = Color(0.18, 0.25, 0.45, 1)
+sky_horizon_color = Color(0.65, 0.72, 0.82, 1)
+ground_bottom_color = Color(0.1, 0.12, 0.16, 1)
+
+[sub_resource type="Sky" id="Sky_env"]
+sky_material = SubResource("ProceduralSkyMaterial_sky")
+
+[sub_resource type="Environment" id="Environment_world"]
+background_mode = 2
+sky = SubResource("Sky_env")
+tonemap_mode = 3
+glow_enabled = true
+glow_bloom = 0.2
+ssao_enabled = true
+ssr_enabled = true
+
+[sub_resource type="PlaneMesh" id="PlaneMesh_ground"]
+size = Vector2(30, 30)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_ground"]
+albedo_color = Color(0.14, 0.16, 0.22, 1)
+roughness = 0.8
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_header"]
+bg_color = Color(0.08, 0.1, 0.15, 0.9)
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+[node name="MainShowcase3D" type="Node3D"]
+script = ExtResource("1_main")
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Environment_world")
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
+transform = Transform3D(0.866025, -0.353553, 0.353553, 0, 0.707107, 0.707107, -0.5, -0.612372, 0.612372, 6, 10, 6)
+shadow_enabled = true
+shadow_bias = 0.04
+
+[node name="Camera3D" type="Camera3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 0.906308, 0.422618, 0, -0.422618, 0.906308, 0, 3.2, 5.8)
+current = true
+fov = 55.0
+
+[node name="Ground" type="MeshInstance3D" parent="."]
+mesh = SubResource("PlaneMesh_ground")
+surface_material_override/0 = SubResource("StandardMaterial3D_ground")
+
+[node name="Modules" type="Node3D" parent="."]
+
+[node name="Module3DMaterials" parent="Modules" instance=ExtResource("2_mat")]
+
+[node name="Module3DLighting" parent="Modules" instance=ExtResource("3_lit")]
+visible = false
+
+[node name="Module3DPhysics" parent="Modules" instance=ExtResource("4_phy")]
+visible = false
+
+[node name="Module3DJoints" parent="Modules" instance=ExtResource("5_jnt")]
+visible = false
+
+[node name="Module3DParticles" parent="Modules" instance=ExtResource("6_ptc")]
+visible = false
+
+[node name="CanvasLayer" type="CanvasLayer" parent="."]
+
+[node name="HUD" type="Control" parent="CanvasLayer"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="Header" type="Panel" parent="CanvasLayer/HUD"]
+layout_mode = 0
+offset_left = 30.0
+offset_top = 15.0
+offset_right = 1122.0
+offset_bottom = 75.0
+theme_override_styles/panel = SubResource("StyleBoxFlat_header")
+
+[node name="Title" type="Label" parent="CanvasLayer/HUD/Header"]
+layout_mode = 0
+offset_left = 20.0
+offset_top = 15.0
+offset_right = 450.0
+offset_bottom = 45.0
+text = "Godot 3D Engine Mega Showcase"
+
+[node name="ModuleTitle" type="Label" parent="CanvasLayer/HUD/Header"]
+layout_mode = 0
+offset_left = 650.0
+offset_top = 15.0
+offset_right = 1070.0
+offset_bottom = 45.0
+text = "1. PBR Materials & Shaders"
+horizontal_alignment = 2
+
+[node name="TabBar" type="TabBar" parent="CanvasLayer/HUD"]
+layout_mode = 0
+offset_left = 30.0
+offset_top = 80.0
+offset_right = 1122.0
+offset_bottom = 120.0
+tab_count = 5
+tab_0/title = "1. Materials"
+tab_1/title = "2. Lighting"
+tab_2/title = "3. Physics"
+tab_3/title = "4. Joints"
+tab_4/title = "5. Particles"

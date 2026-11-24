@@ -1,0 +1,6 @@
+.godot/
+*.translation
+*.tmp
+artifacts/
+user_data/
+.DS_Store

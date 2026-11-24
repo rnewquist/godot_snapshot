@@ -1,0 +1,70 @@
+name: Release GDTest
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      tag_name:
+        description: 'Release Tag Name (e.g. v3.0.0)'
+        required: true
+        default: 'v3.0.0'
+
+jobs:
+  package-release:
+    name: Package & Publish Release
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Determine Release Version
+        id: vars
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            TAG="${{ github.event.inputs.tag_name }}"
+          else
+            TAG="${GITHUB_REF#refs/tags/}"
+          fi
+          echo "tag=$TAG" >> $GITHUB_OUTPUT
+          echo "Building release for tag $TAG"
+
+      - name: Build Release ZIP Package
+        run: |
+          VERSION="${{ steps.vars.outputs.tag }}"
+          ZIP_NAME="gdtest-${VERSION}.zip"
+          
+          # Create clean staging directory
+          mkdir -p staging/addons
+          cp -r addons/gdtest staging/addons/
+          cp LICENSE staging/
+          cp README.md staging/
+          mkdir -p staging/tools
+          cp tools/gdtest_cli.py staging/tools/
+          
+          # Create zip archive
+          cd staging
+          zip -r "../${ZIP_NAME}" addons/ LICENSE README.md tools/
+          cd ..
+          
+          # Compute sha256 checksum
+          sha256sum "${ZIP_NAME}" > "${ZIP_NAME}.sha256"
+          
+          echo "Created ${ZIP_NAME} with SHA256:"
+          cat "${ZIP_NAME}.sha256"
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.vars.outputs.tag }}
+          name: "GDTest ${{ steps.vars.outputs.tag }} - Universal Testing Framework for Godot 4.x"
+          draft: false
+          prerelease: false
+          generate_release_notes: true
+          files: |
+            gdtest-*.zip
+            gdtest-*.zip.sha256

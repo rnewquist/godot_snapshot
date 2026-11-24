@@ -1,0 +1,244 @@
+[gd_scene load_steps=29 format=3]
+
+[ext_resource type="Script" path="res://modules/module_3d_materials.gd" id="1_mat"]
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_pedestal"]
+top_radius = 3.2
+bottom_radius = 3.4
+height = 0.2
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_pedestal"]
+albedo_color = Color(0.12, 0.14, 0.18, 1)
+roughness = 0.7
+
+[sub_resource type="SphereMesh" id="SphereMesh_sample"]
+radius = 0.45
+height = 0.9
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_gold"]
+albedo_color = Color(1, 0.85, 0.25, 1)
+metallic = 1.0
+roughness = 0.1
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_plastic"]
+albedo_color = Color(0.2, 0.7, 1, 1)
+metallic = 0.0
+roughness = 0.05
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_clay"]
+albedo_color = Color(0.85, 0.45, 0.25, 1)
+metallic = 0.0
+roughness = 0.95
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_glow"]
+albedo_color = Color(1, 0.4, 0.1, 1)
+emission_enabled = true
+emission = Color(1, 0.5, 0.1, 1)
+emission_energy_multiplier = 3.0
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_glass"]
+transparency = 1
+albedo_color = Color(1, 1, 1, 0.35)
+roughness = 0.05
+refraction_enabled = true
+refraction_scale = 0.05
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_clearcoat"]
+albedo_color = Color(0.9, 0.1, 0.2, 1)
+metallic = 0.8
+roughness = 0.3
+clearcoat_enabled = true
+clearcoat = 1.0
+clearcoat_roughness = 0.0
+
+[sub_resource type="BoxMesh" id="BoxMesh_box"]
+size = Vector3(0.5, 0.5, 0.5)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_bronze"]
+albedo_color = Color(0.8, 0.5, 0.2, 1)
+metallic = 0.9
+roughness = 0.25
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_cylinder"]
+top_radius = 0.2
+bottom_radius = 0.2
+height = 0.5
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_steel"]
+albedo_color = Color(0.7, 0.75, 0.8, 1)
+metallic = 0.95
+roughness = 0.3
+
+[sub_resource type="CapsuleMesh" id="CapsuleMesh_capsule"]
+radius = 0.18
+height = 0.5
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_emerald"]
+albedo_color = Color(0.1, 0.85, 0.4, 1)
+roughness = 0.15
+rim_enabled = true
+rim = 0.5
+
+[sub_resource type="PrismMesh" id="PrismMesh_prism"]
+size = Vector3(0.5, 0.5, 0.5)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_ruby"]
+albedo_color = Color(0.9, 0.15, 0.3, 1)
+metallic = 0.3
+roughness = 0.1
+
+[sub_resource type="PlaneMesh" id="PlaneMesh_plane"]
+size = Vector2(0.5, 0.5)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_carbon"]
+albedo_color = Color(0.2, 0.2, 0.25, 1)
+roughness = 0.4
+
+[sub_resource type="QuadMesh" id="QuadMesh_quad"]
+size = Vector2(0.5, 0.5)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_holo"]
+albedo_color = Color(0.3, 0.8, 0.9, 0.9)
+emission_enabled = true
+emission = Color(0.1, 0.6, 0.8, 1)
+emission_energy_multiplier = 1.5
+
+[sub_resource type="TorusMesh" id="TorusMesh_torus"]
+inner_radius = 0.14
+outer_radius = 0.28
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_chrome"]
+albedo_color = Color(0.95, 0.95, 0.98, 1)
+metallic = 1.0
+roughness = 0.02
+
+[sub_resource type="RibbonTrailMesh" id="RibbonTrailMesh_ribbon"]
+size = 0.4
+sections = 4
+section_length = 0.1
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_plasma"]
+albedo_color = Color(0.9, 0.2, 0.8, 1)
+emission_enabled = true
+emission = Color(0.9, 0.2, 0.8, 1)
+emission_energy_multiplier = 2.5
+
+[sub_resource type="TubeTrailMesh" id="TubeTrailMesh_tube"]
+radius = 0.12
+sections = 4
+section_length = 0.1
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_neon"]
+albedo_color = Color(0.2, 0.95, 0.6, 1)
+emission_enabled = true
+emission = Color(0.2, 0.95, 0.6, 1)
+emission_energy_multiplier = 2.0
+
+[sub_resource type="PointMesh" id="PointMesh_point"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_star"]
+albedo_color = Color(1, 1, 1, 1)
+use_point_size = true
+point_size = 12.0
+emission_enabled = true
+emission = Color(1, 1, 1, 1)
+emission_energy_multiplier = 3.0
+
+[node name="Module3DMaterials" type="Node3D"]
+script = ExtResource("1_mat")
+
+[node name="Pedestal" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.1, 0)
+mesh = SubResource("CylinderMesh_pedestal")
+surface_material_override/0 = SubResource("StandardMaterial3D_pedestal")
+
+[node name="SpheresContainer" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.7, 0)
+
+[node name="GoldSphere" type="MeshInstance3D" parent="SpheresContainer"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.8, 0, 0)
+mesh = SubResource("SphereMesh_sample")
+surface_material_override/0 = SubResource("StandardMaterial3D_gold")
+
+[node name="PlasticSphere" type="MeshInstance3D" parent="SpheresContainer"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.9, 0, 1.558)
+mesh = SubResource("SphereMesh_sample")
+surface_material_override/0 = SubResource("StandardMaterial3D_plastic")
+
+[node name="ClaySphere" type="MeshInstance3D" parent="SpheresContainer"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.9, 0, 1.558)
+mesh = SubResource("SphereMesh_sample")
+surface_material_override/0 = SubResource("StandardMaterial3D_clay")
+
+[node name="GlowSphere" type="MeshInstance3D" parent="SpheresContainer"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.8, 0, 0)
+mesh = SubResource("SphereMesh_sample")
+surface_material_override/0 = SubResource("StandardMaterial3D_glow")
+
+[node name="GlassSphere" type="MeshInstance3D" parent="SpheresContainer"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.9, 0, -1.558)
+mesh = SubResource("SphereMesh_sample")
+surface_material_override/0 = SubResource("StandardMaterial3D_glass")
+
+[node name="ClearcoatSphere" type="MeshInstance3D" parent="SpheresContainer"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.9, 0, -1.558)
+mesh = SubResource("SphereMesh_sample")
+surface_material_override/0 = SubResource("StandardMaterial3D_clearcoat")
+
+[node name="PrimitivesContainer" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.8, 0)
+
+[node name="BoxInstance" type="MeshInstance3D" parent="PrimitivesContainer"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.4, 0, 0)
+mesh = SubResource("BoxMesh_box")
+surface_material_override/0 = SubResource("StandardMaterial3D_bronze")
+
+[node name="SphereInstance" type="MeshInstance3D" parent="PrimitivesContainer"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.94, 0, 1.41)
+mesh = SubResource("SphereMesh_sample")
+surface_material_override/0 = SubResource("StandardMaterial3D_gold")
+
+[node name="CylinderInstance" type="MeshInstance3D" parent="PrimitivesContainer"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.74, 0, 2.28)
+mesh = SubResource("CylinderMesh_cylinder")
+surface_material_override/0 = SubResource("StandardMaterial3D_steel")
+
+[node name="CapsuleInstance" type="MeshInstance3D" parent="PrimitivesContainer"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.74, 0, 2.28)
+mesh = SubResource("CapsuleMesh_capsule")
+surface_material_override/0 = SubResource("StandardMaterial3D_emerald")
+
+[node name="PrismInstance" type="MeshInstance3D" parent="PrimitivesContainer"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.94, 0, 1.41)
+mesh = SubResource("PrismMesh_prism")
+surface_material_override/0 = SubResource("StandardMaterial3D_ruby")
+
+[node name="PlaneInstance" type="MeshInstance3D" parent="PrimitivesContainer"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.4, 0, 0)
+mesh = SubResource("PlaneMesh_plane")
+surface_material_override/0 = SubResource("StandardMaterial3D_carbon")
+
+[node name="QuadInstance" type="MeshInstance3D" parent="PrimitivesContainer"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.94, 0, -1.41)
+mesh = SubResource("QuadMesh_quad")
+surface_material_override/0 = SubResource("StandardMaterial3D_holo")
+
+[node name="TorusInstance" type="MeshInstance3D" parent="PrimitivesContainer"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.74, 0, -2.28)
+mesh = SubResource("TorusMesh_torus")
+surface_material_override/0 = SubResource("StandardMaterial3D_chrome")
+
+[node name="RibbonTrailInstance" type="MeshInstance3D" parent="PrimitivesContainer"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.74, 0, -2.28)
+mesh = SubResource("RibbonTrailMesh_ribbon")
+surface_material_override/0 = SubResource("StandardMaterial3D_plasma")
+
+[node name="TubeTrailInstance" type="MeshInstance3D" parent="PrimitivesContainer"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.94, 0, -1.41)
+mesh = SubResource("TubeTrailMesh_tube")
+surface_material_override/0 = SubResource("StandardMaterial3D_neon")
+
+[node name="PointMeshInstance" type="MeshInstance3D" parent="PrimitivesContainer"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.3, 0)
+mesh = SubResource("PointMesh_point")
+surface_material_override/0 = SubResource("StandardMaterial3D_star")

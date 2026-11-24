@@ -1,0 +1,326 @@
+[gd_scene load_steps=6 format=3]
+
+[ext_resource type="Script" path="res://modules/module_audio_dsp.gd" id="1_aud"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_panel"]
+bg_color = Color(0.08, 0.1, 0.15, 0.9)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_right = 6
+corner_radius_bottom_left = 6
+content_margin_left = 12.0
+content_margin_top = 10.0
+content_margin_right = 12.0
+content_margin_bottom = 10.0
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_vu_bg"]
+bg_color = Color(0.05, 0.06, 0.08, 0.8)
+corner_radius_top_left = 3
+corner_radius_top_right = 3
+corner_radius_bottom_right = 3
+corner_radius_bottom_left = 3
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_vu_fill"]
+bg_color = Color(0.2, 0.75, 0.9, 0.9)
+corner_radius_top_left = 3
+corner_radius_top_right = 3
+corner_radius_bottom_right = 3
+corner_radius_bottom_left = 3
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_needle_fill"]
+bg_color = Color(1, 0.3, 0.2, 1)
+
+[node name="ModuleAudioDSP" type="Node3D"]
+script = ExtResource("1_aud")
+
+[node name="AudioStreamPlayer3D" type="AudioStreamPlayer3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, 0)
+bus = &"SFX"
+max_distance = 20.0
+
+[node name="AudioStreamPlayer2D" type="AudioStreamPlayer2D" parent="."]
+bus = &"Filtered"
+max_distance = 500.0
+
+[node name="AudioStreamPlayer" type="AudioStreamPlayer" parent="."]
+bus = &"Master"
+
+[node name="CanvasLayer" type="CanvasLayer" parent="."]
+
+[node name="UI" type="Control" parent="CanvasLayer"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 30.0
+offset_top = 115.0
+offset_right = -30.0
+offset_bottom = -20.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="VBox" type="VBoxContainer" parent="CanvasLayer/UI"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 10
+
+[node name="Header" type="Label" parent="CanvasLayer/UI/VBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "Real-Time FFT Spectrum Analyzer & 28-Bus Audio DSP Architecture"
+
+[node name="ControlsRow" type="HBoxContainer" parent="CanvasLayer/UI/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="BusLabel" type="Label" parent="CanvasLayer/UI/VBox/ControlsRow"]
+layout_mode = 2
+text = "Audio Bus:"
+
+[node name="BusSelector" type="OptionButton" parent="CanvasLayer/UI/VBox/ControlsRow"]
+custom_minimum_size = Vector2(200, 32)
+layout_mode = 2
+
+[node name="ToneButton" type="Button" parent="CanvasLayer/UI/VBox/ControlsRow"]
+custom_minimum_size = Vector2(210, 32)
+layout_mode = 2
+text = "Start 440Hz Tone Generator"
+
+[node name="VolLabel" type="Label" parent="CanvasLayer/UI/VBox/ControlsRow"]
+layout_mode = 2
+text = "Vol:"
+
+[node name="VolumeSlider" type="HSlider" parent="CanvasLayer/UI/VBox/ControlsRow"]
+custom_minimum_size = Vector2(120, 24)
+layout_mode = 2
+size_flags_vertical = 4
+max_value = 1.5
+step = 0.01
+value = 1.0
+
+[node name="MuteCheckbox" type="CheckBox" parent="CanvasLayer/UI/VBox/ControlsRow"]
+layout_mode = 2
+text = "Mute"
+
+[node name="BypassCheckbox" type="CheckBox" parent="CanvasLayer/UI/VBox/ControlsRow"]
+layout_mode = 2
+text = "Bypass FX"
+
+[node name="SpectrumContainer" type="PanelContainer" parent="CanvasLayer/UI/VBox"]
+custom_minimum_size = Vector2(0, 220)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_panel")
+
+[node name="BarsContainer" type="HBoxContainer" parent="CanvasLayer/UI/VBox/SpectrumContainer"]
+layout_mode = 2
+theme_override_constants/separation = 16
+alignment = 1
+
+[node name="BandColumn0" type="VBoxContainer" parent="CanvasLayer/UI/VBox/SpectrumContainer/BarsContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="PeakNeedle" type="ProgressBar" parent="CanvasLayer/UI/VBox/SpectrumContainer/BarsContainer/BandColumn0"]
+custom_minimum_size = Vector2(0, 4)
+layout_mode = 2
+theme_override_styles/fill = SubResource("StyleBoxFlat_needle_fill")
+show_percentage = false
+
+[node name="VUBar" type="ProgressBar" parent="CanvasLayer/UI/VBox/SpectrumContainer/BarsContainer/BandColumn0"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_styles/background = SubResource("StyleBoxFlat_vu_bg")
+theme_override_styles/fill = SubResource("StyleBoxFlat_vu_fill")
+fill_mode = 3
+show_percentage = false
+
+[node name="BandLabel" type="Label" parent="CanvasLayer/UI/VBox/SpectrumContainer/BarsContainer/BandColumn0"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 11
+text = "Sub-Bass"
+horizontal_alignment = 1
+
+[node name="BandColumn1" type="VBoxContainer" parent="CanvasLayer/UI/VBox/SpectrumContainer/BarsContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="PeakNeedle" type="ProgressBar" parent="CanvasLayer/UI/VBox/SpectrumContainer/BarsContainer/BandColumn1"]
+custom_minimum_size = Vector2(0, 4)
+layout_mode = 2
+theme_override_styles/fill = SubResource("StyleBoxFlat_needle_fill")
+show_percentage = false
+
+[node name="VUBar" type="ProgressBar" parent="CanvasLayer/UI/VBox/SpectrumContainer/BarsContainer/BandColumn1"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_styles/background = SubResource("StyleBoxFlat_vu_bg")
+theme_override_styles/fill = SubResource("StyleBoxFlat_vu_fill")
+fill_mode = 3
+show_percentage = false
+
+[node name="BandLabel" type="Label" parent="CanvasLayer/UI/VBox/SpectrumContainer/BarsContainer/BandColumn1"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 11
+text = "Bass"
+horizontal_alignment = 1
+
+[node name="BandColumn2" type="VBoxContainer" parent="CanvasLayer/UI/VBox/SpectrumContainer/BarsContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="PeakNeedle" type="ProgressBar" parent="CanvasLayer/UI/VBox/SpectrumContainer/BarsContainer/BandColumn2"]
+custom_minimum_size = Vector2(0, 4)
+layout_mode = 2
+theme_override_styles/fill = SubResource("StyleBoxFlat_needle_fill")
+show_percentage = false
+
+[node name="VUBar" type="ProgressBar" parent="CanvasLayer/UI/VBox/SpectrumContainer/BarsContainer/BandColumn2"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_styles/background = SubResource("StyleBoxFlat_vu_bg")
+theme_override_styles/fill = SubResource("StyleBoxFlat_vu_fill")
+fill_mode = 3
+show_percentage = false
+
+[node name="BandLabel" type="Label" parent="CanvasLayer/UI/VBox/SpectrumContainer/BarsContainer/BandColumn2"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 11
+text = "Low-Mid"
+horizontal_alignment = 1
+
+[node name="BandColumn3" type="VBoxContainer" parent="CanvasLayer/UI/VBox/SpectrumContainer/BarsContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="PeakNeedle" type="ProgressBar" parent="CanvasLayer/UI/VBox/SpectrumContainer/BarsContainer/BandColumn3"]
+custom_minimum_size = Vector2(0, 4)
+layout_mode = 2
+theme_override_styles/fill = SubResource("StyleBoxFlat_needle_fill")
+show_percentage = false
+
+[node name="VUBar" type="ProgressBar" parent="CanvasLayer/UI/VBox/SpectrumContainer/BarsContainer/BandColumn3"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_styles/background = SubResource("StyleBoxFlat_vu_bg")
+theme_override_styles/fill = SubResource("StyleBoxFlat_vu_fill")
+fill_mode = 3
+show_percentage = false
+
+[node name="BandLabel" type="Label" parent="CanvasLayer/UI/VBox/SpectrumContainer/BarsContainer/BandColumn3"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 11
+text = "Mid"
+horizontal_alignment = 1
+
+[node name="BandColumn4" type="VBoxContainer" parent="CanvasLayer/UI/VBox/SpectrumContainer/BarsContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="PeakNeedle" type="ProgressBar" parent="CanvasLayer/UI/VBox/SpectrumContainer/BarsContainer/BandColumn4"]
+custom_minimum_size = Vector2(0, 4)
+layout_mode = 2
+theme_override_styles/fill = SubResource("StyleBoxFlat_needle_fill")
+show_percentage = false
+
+[node name="VUBar" type="ProgressBar" parent="CanvasLayer/UI/VBox/SpectrumContainer/BarsContainer/BandColumn4"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_styles/background = SubResource("StyleBoxFlat_vu_bg")
+theme_override_styles/fill = SubResource("StyleBoxFlat_vu_fill")
+fill_mode = 3
+show_percentage = false
+
+[node name="BandLabel" type="Label" parent="CanvasLayer/UI/VBox/SpectrumContainer/BarsContainer/BandColumn4"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 11
+text = "High-Mid"
+horizontal_alignment = 1
+
+[node name="BandColumn5" type="VBoxContainer" parent="CanvasLayer/UI/VBox/SpectrumContainer/BarsContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="PeakNeedle" type="ProgressBar" parent="CanvasLayer/UI/VBox/SpectrumContainer/BarsContainer/BandColumn5"]
+custom_minimum_size = Vector2(0, 4)
+layout_mode = 2
+theme_override_styles/fill = SubResource("StyleBoxFlat_needle_fill")
+show_percentage = false
+
+[node name="VUBar" type="ProgressBar" parent="CanvasLayer/UI/VBox/SpectrumContainer/BarsContainer/BandColumn5"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_styles/background = SubResource("StyleBoxFlat_vu_bg")
+theme_override_styles/fill = SubResource("StyleBoxFlat_vu_fill")
+fill_mode = 3
+show_percentage = false
+
+[node name="BandLabel" type="Label" parent="CanvasLayer/UI/VBox/SpectrumContainer/BarsContainer/BandColumn5"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 11
+text = "Presence"
+horizontal_alignment = 1
+
+[node name="BandColumn6" type="VBoxContainer" parent="CanvasLayer/UI/VBox/SpectrumContainer/BarsContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="PeakNeedle" type="ProgressBar" parent="CanvasLayer/UI/VBox/SpectrumContainer/BarsContainer/BandColumn6"]
+custom_minimum_size = Vector2(0, 4)
+layout_mode = 2
+theme_override_styles/fill = SubResource("StyleBoxFlat_needle_fill")
+show_percentage = false
+
+[node name="VUBar" type="ProgressBar" parent="CanvasLayer/UI/VBox/SpectrumContainer/BarsContainer/BandColumn6"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_styles/background = SubResource("StyleBoxFlat_vu_bg")
+theme_override_styles/fill = SubResource("StyleBoxFlat_vu_fill")
+fill_mode = 3
+show_percentage = false
+
+[node name="BandLabel" type="Label" parent="CanvasLayer/UI/VBox/SpectrumContainer/BarsContainer/BandColumn6"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 11
+text = "Brilliance"
+horizontal_alignment = 1
+
+[node name="BandColumn7" type="VBoxContainer" parent="CanvasLayer/UI/VBox/SpectrumContainer/BarsContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="PeakNeedle" type="ProgressBar" parent="CanvasLayer/UI/VBox/SpectrumContainer/BarsContainer/BandColumn7"]
+custom_minimum_size = Vector2(0, 4)
+layout_mode = 2
+theme_override_styles/fill = SubResource("StyleBoxFlat_needle_fill")
+show_percentage = false
+
+[node name="VUBar" type="ProgressBar" parent="CanvasLayer/UI/VBox/SpectrumContainer/BarsContainer/BandColumn7"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_styles/background = SubResource("StyleBoxFlat_vu_bg")
+theme_override_styles/fill = SubResource("StyleBoxFlat_vu_fill")
+fill_mode = 3
+show_percentage = false
+
+[node name="BandLabel" type="Label" parent="CanvasLayer/UI/VBox/SpectrumContainer/BarsContainer/BandColumn7"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 11
+text = "Air"
+horizontal_alignment = 1
+
+[node name="DSPInfoPanel" type="PanelContainer" parent="CanvasLayer/UI/VBox"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_styles/panel = SubResource("StyleBoxFlat_panel")
+
+[node name="DSPInfoLabel" type="Label" parent="CanvasLayer/UI/VBox/DSPInfoPanel"]
+layout_mode = 2
+size_flags_vertical = 1
+theme_override_font_sizes/font_size = 12
+text = "Bus Info Initializing..."
+autowrap_mode = 2

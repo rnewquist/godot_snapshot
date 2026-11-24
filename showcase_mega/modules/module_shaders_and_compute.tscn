@@ -1,0 +1,754 @@
+[gd_scene load_steps=26 format=3]
+
+[ext_resource type="Script" path="res://modules/module_shaders_and_compute.gd" id="1_shd"]
+
+[sub_resource type="Shader" id="Shader_wave"]
+code = "shader_type spatial;
+render_mode cull_disabled, specular_schlick_ggx;
+
+uniform float wave_frequency : hint_range(1.0, 10.0) = 4.0;
+uniform float wave_amplitude : hint_range(0.05, 1.0) = 0.25;
+uniform float wave_speed : hint_range(0.5, 10.0) = 3.0;
+uniform vec4 deep_color : source_color = vec4(0.06, 0.28, 0.62, 1.0);
+uniform vec4 crest_color : source_color = vec4(0.24, 0.82, 0.98, 1.0);
+uniform float roughness_val : hint_range(0.05, 1.0) = 0.18;
+uniform float metallic_val : hint_range(0.0, 1.0) = 0.45;
+
+varying float v_wave_h;
+
+void vertex() {
+	float phase_x = VERTEX.x * wave_frequency + TIME * wave_speed;
+	float phase_z = VERTEX.z * (wave_frequency * 0.75) - TIME * (wave_speed * 0.65);
+	float h = sin(phase_x) * wave_amplitude + cos(phase_z) * (wave_amplitude * 0.45);
+	float dh_dx = cos(phase_x) * wave_frequency * wave_amplitude;
+	float dh_dz = -sin(phase_z) * (wave_frequency * 0.75) * (wave_amplitude * 0.45);
+	VERTEX.y += h;
+	NORMAL = normalize(vec3(-dh_dx, 1.0, -dh_dz));
+	v_wave_h = clamp(h / max(wave_amplitude * 1.45, 0.001) * 0.5 + 0.5, 0.0, 1.0);
+}
+
+void fragment() {
+	float fresnel = pow(clamp(1.0 - clamp(dot(NORMAL, VIEW), 0.0, 1.0), 0.0, 1.0), 3.0);
+	float ripple_band = 0.5 + 0.5 * sin(UV.x * 12.0 + UV.y * 8.0);
+	vec3 base_col = mix(deep_color.rgb, crest_color.rgb, clamp(v_wave_h * 0.8 + ripple_band * 0.2, 0.0, 1.0));
+	ALBEDO = mix(base_col, vec3(0.92, 0.98, 1.0), fresnel * 0.35);
+	EMISSION = crest_color.rgb * (v_wave_h * v_wave_h * 0.18 + fresnel * 0.12);
+	ROUGHNESS = roughness_val;
+	METALLIC = metallic_val;
+}
+"
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_wave"]
+render_priority = 0
+shader = SubResource("Shader_wave")
+shader_parameter/wave_frequency = 4.0
+shader_parameter/wave_amplitude = 0.25
+shader_parameter/wave_speed = 3.0
+shader_parameter/deep_color = Color(0.06, 0.28, 0.62, 1)
+shader_parameter/crest_color = Color(0.24, 0.82, 0.98, 1)
+shader_parameter/roughness_val = 0.18
+shader_parameter/metallic_val = 0.45
+
+[sub_resource type="PlaneMesh" id="PlaneMesh_subdivided"]
+size = Vector2(1.75, 1.75)
+subdivide_width = 32
+subdivide_depth = 32
+
+[sub_resource type="Shader" id="Shader_terrain_fbm"]
+code = "shader_type spatial;
+render_mode cull_back, specular_schlick_ggx;
+
+uniform float ridge_scale : hint_range(1.0, 8.0) = 2.6;
+uniform float ridge_gain : hint_range(0.5, 2.5) = 1.65;
+uniform float displacement_amp : hint_range(0.0, 0.45) = 0.16;
+uniform float strata_freq : hint_range(2.0, 20.0) = 9.0;
+uniform float snow_line : hint_range(0.2, 0.95) = 0.58;
+
+varying float v_ridge_h;
+varying vec3 v_local_pos;
+varying vec3 v_local_norm;
+
+const mat3 NOISE_ROT = mat3(
+	vec3(0.00, 0.80, 0.60),
+	vec3(-0.80, 0.36, -0.48),
+	vec3(-0.60, -0.48, 0.64)
+);
+
+float hash31(vec3 p3) {
+	p3 = fract(p3 * 0.1031);
+	p3 += dot(p3, p3.zyx + 31.32);
+	return fract((p3.x + p3.y) * p3.z);
+}
+
+float noise3d(vec3 x) {
+	vec3 i = floor(x);
+	vec3 f = fract(x);
+	vec3 u = f * f * (3.0 - 2.0 * f);
+	float n000 = hash31(i + vec3(0.0, 0.0, 0.0));
+	float n100 = hash31(i + vec3(1.0, 0.0, 0.0));
+	float n010 = hash31(i + vec3(0.0, 1.0, 0.0));
+	float n110 = hash31(i + vec3(1.0, 1.0, 0.0));
+	float n001 = hash31(i + vec3(0.0, 0.0, 1.0));
+	float n101 = hash31(i + vec3(1.0, 0.0, 1.0));
+	float n011 = hash31(i + vec3(0.0, 1.0, 1.0));
+	float n111 = hash31(i + vec3(1.0, 1.0, 1.0));
+	float nx00 = mix(n000, n100, u.x);
+	float nx10 = mix(n010, n110, u.x);
+	float nx01 = mix(n001, n101, u.x);
+	float nx11 = mix(n011, n111, u.x);
+	return mix(mix(nx00, nx10, u.y), mix(nx01, nx11, u.y), u.z);
+}
+
+float fbm_ridge3d(vec3 p, float gain_w) {
+	float sum = 0.0;
+	float amp = 0.55;
+	float prev_w = 1.0;
+	vec3 wp = p;
+	for (int i = 0; i < 3; i++) {
+		float r = 1.0 - abs(noise3d(wp) * 2.0 - 1.0);
+		r = r * r * prev_w;
+		prev_w = clamp(r * gain_w, 0.1, 1.0);
+		sum += r * amp;
+		wp = NOISE_ROT * wp * 2.03;
+		amp *= 0.5;
+	}
+	return sum;
+}
+
+void vertex() {
+	vec3 base_dir = VERTEX / max(length(VERTEX), 0.0001);
+	float h = fbm_ridge3d(base_dir * ridge_scale, ridge_gain);
+	float hx = fbm_ridge3d((base_dir + vec3(0.04, 0.0, 0.0)) * ridge_scale, ridge_gain);
+	float hz = fbm_ridge3d((base_dir + vec3(0.0, 0.0, 0.04)) * ridge_scale, ridge_gain);
+	VERTEX += NORMAL * (h * displacement_amp);
+	vec3 grad = vec3(hx - h, 0.0, hz - h) * (displacement_amp * 8.0);
+	NORMAL = normalize(NORMAL - grad);
+	v_ridge_h = h;
+	v_local_pos = VERTEX;
+	v_local_norm = NORMAL;
+}
+
+void fragment() {
+	float up_slope = clamp(dot(v_local_norm, vec3(0.0, 1.0, 0.0)) * 0.5 + 0.5, 0.0, 1.0);
+	float strata = 0.5 + 0.5 * sin(v_local_pos.y * strata_freq + v_ridge_h * 4.5);
+	vec3 tier0_slate = vec3(0.14, 0.18, 0.25);
+	vec3 tier1_granite = mix(vec3(0.35, 0.33, 0.30), vec3(0.48, 0.43, 0.38), strata);
+	vec3 tier2_moss = vec3(0.26, 0.46, 0.22);
+	vec3 tier3_snow = vec3(0.93, 0.96, 0.99);
+	float elev = clamp(v_ridge_h, 0.0, 1.0);
+	vec3 col = mix(tier0_slate, tier1_granite, smoothstep(0.18, 0.45, elev));
+	col = mix(col, tier2_moss, smoothstep(0.35, 0.62, elev) * smoothstep(0.45, 0.75, up_slope));
+	float snow_mask = smoothstep(snow_line, snow_line + 0.18, elev + up_slope * 0.15);
+	ALBEDO = mix(col, tier3_snow, snow_mask);
+	ROUGHNESS = mix(0.82, 0.35, snow_mask);
+	METALLIC = 0.05;
+}
+"
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_terrain_fbm"]
+render_priority = 0
+shader = SubResource("Shader_terrain_fbm")
+shader_parameter/ridge_scale = 2.6
+shader_parameter/ridge_gain = 1.65
+shader_parameter/displacement_amp = 0.16
+shader_parameter/strata_freq = 9.0
+shader_parameter/snow_line = 0.58
+
+[sub_resource type="SphereMesh" id="SphereMesh_terrain"]
+radius = 0.68
+height = 1.36
+radial_segments = 48
+rings = 24
+
+[sub_resource type="Shader" id="Shader_voronoi_masonry"]
+code = "shader_type spatial;
+render_mode cull_back, specular_schlick_ggx;
+
+uniform float cell_scale : hint_range(2.0, 16.0) = 6.0;
+uniform float mortar_width : hint_range(0.02, 0.25) = 0.08;
+uniform float cotangent_bump_scale : hint_range(0.0, 2.0) = 0.85;
+uniform float masonry_mode_mix : hint_range(0.0, 1.0) = 1.0;
+uniform vec4 stone_color : source_color = vec4(0.46, 0.49, 0.54, 1.0);
+uniform vec4 mortar_color : source_color = vec4(0.16, 0.17, 0.19, 1.0);
+
+vec2 hash22(vec2 p) {
+	vec3 p3 = fract(vec3(p.xyx) * vec3(0.1031, 0.1030, 0.0973));
+	p3 += dot(p3, p3.yzx + 33.33);
+	return fract((p3.xx + p3.yz) * p3.zy);
+}
+
+float hash12(vec2 p) {
+	vec3 p3 = fract(vec3(p.xyx) * 0.1031);
+	p3 += dot(p3, p3.yzx + 33.33);
+	return fract((p3.x + p3.y) * p3.z);
+}
+
+vec2 voronoi_3x3_dome(vec2 uv, float jitter) {
+	vec2 n = floor(uv);
+	vec2 f = fract(uv);
+	float d1 = 8.0;
+	float id = 0.0;
+	for (int j = -1; j <= 1; j++) {
+		for (int i = -1; i <= 1; i++) {
+			vec2 g = vec2(float(i), float(j));
+			vec2 r = g + mix(vec2(0.5), hash22(n + g), jitter) - f;
+			float d = dot(r, r);
+			if (d < d1) {
+				d1 = d;
+				id = hash12(n + g);
+			}
+		}
+	}
+	return vec2(clamp(1.0 - d1, 0.0, 1.0), id);
+}
+
+vec2 voronoi_5x5_bisector(vec2 uv, float jitter) {
+	vec2 n = floor(uv);
+	vec2 f = fract(uv);
+	vec2 mg = vec2(0.0);
+	vec2 mr = vec2(0.0);
+	float md = 8.0;
+	for (int j = -1; j <= 1; j++) {
+		for (int i = -1; i <= 1; i++) {
+			vec2 g = vec2(float(i), float(j));
+			vec2 r = g + mix(vec2(0.5), hash22(n + g), jitter) - f;
+			float d = dot(r, r);
+			if (d < md) {
+				md = d;
+				mr = r;
+				mg = g;
+			}
+		}
+	}
+	float edge_d = 8.0;
+	for (int j = -2; j <= 2; j++) {
+		for (int i = -2; i <= 2; i++) {
+			vec2 g = mg + vec2(float(i), float(j));
+			vec2 r = g + mix(vec2(0.5), hash22(n + g), jitter) - f;
+			vec2 diff = r - mr;
+			float diff_len_sq = dot(diff, diff);
+			if (diff_len_sq > 0.0001) {
+				vec2 bisector_dir = diff * inversesqrt(diff_len_sq);
+				edge_d = min(edge_d, dot(0.5 * (mr + r), bisector_dir));
+			}
+		}
+	}
+	return vec2(edge_d, hash12(n + mg));
+}
+
+vec3 perturb_normal_cotangent(vec3 view_n, vec3 view_pos, vec2 uv, vec2 dh_duv, float scale) {
+	vec3 dp1 = dFdx(view_pos);
+	vec3 dp2 = dFdy(view_pos);
+	vec2 duv1 = dFdx(uv);
+	vec2 duv2 = dFdy(uv);
+	vec3 dp2perp = cross(dp2, view_n);
+	vec3 dp1perp = cross(view_n, dp1);
+	vec3 T = dp2perp * duv1.x + dp1perp * duv2.x;
+	vec3 B = dp2perp * duv1.y + dp1perp * duv2.y;
+	float invmax = inversesqrt(max(dot(T, T), dot(B, B)) + 1e-8);
+	return normalize(view_n - (T * dh_duv.x + B * dh_duv.y) * (scale * invmax));
+}
+
+void fragment() {
+	vec2 scaled_uv = UV * cell_scale;
+	float fw = length(fwidth(scaled_uv));
+	float mip_fade = 1.0 - smoothstep(0.25, 0.75, fw);
+	vec2 dome_res = voronoi_3x3_dome(scaled_uv, 0.78);
+	vec2 masonry_res = voronoi_5x5_bisector(scaled_uv, 0.78);
+	float stone_bevel = smoothstep(mortar_width * 0.5, mortar_width * 1.6, masonry_res.x);
+	float h_profile = mix(dome_res.x, stone_bevel, masonry_mode_mix) * mip_fade;
+	float cell_id = mix(dome_res.y, masonry_res.y, masonry_mode_mix);
+	vec2 dh_duv = vec2(dFdx(h_profile), dFdy(h_profile));
+	NORMAL = perturb_normal_cotangent(NORMAL, VERTEX, scaled_uv, dh_duv, cotangent_bump_scale);
+	vec3 varied_stone = stone_color.rgb * (0.82 + 0.34 * cell_id);
+	ALBEDO = mix(mortar_color.rgb, varied_stone, h_profile);
+	ROUGHNESS = mix(0.92, 0.52, h_profile);
+	METALLIC = 0.08;
+}
+"
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_voronoi_masonry"]
+render_priority = 0
+shader = SubResource("Shader_voronoi_masonry")
+shader_parameter/cell_scale = 6.0
+shader_parameter/mortar_width = 0.08
+shader_parameter/cotangent_bump_scale = 0.85
+shader_parameter/masonry_mode_mix = 1.0
+shader_parameter/stone_color = Color(0.46, 0.49, 0.54, 1)
+shader_parameter/mortar_color = Color(0.16, 0.17, 0.19, 1)
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_masonry"]
+top_radius = 0.58
+bottom_radius = 0.64
+height = 1.3
+radial_segments = 40
+rings = 8
+
+[sub_resource type="Shader" id="Shader_tactile_wool"]
+code = "shader_type spatial;
+render_mode cull_back, diffuse_burley, specular_schlick_ggx;
+
+uniform vec4 wool_tint : source_color = vec4(0.86, 0.34, 0.24, 1.0);
+uniform vec4 stitch_tint : source_color = vec4(0.97, 0.92, 0.78, 1.0);
+uniform float rim_power : hint_range(1.0, 8.0) = 3.0;
+uniform float subsurf_scatter : hint_range(0.0, 1.0) = 0.48;
+uniform float fiber_freq : hint_range(40.0, 300.0) = 140.0;
+uniform float stitch_freq : hint_range(6.0, 36.0) = 18.0;
+
+float hash12(vec2 p) {
+	vec3 p3 = fract(vec3(p.xyx) * 0.1031);
+	p3 += dot(p3, p3.yzx + 33.33);
+	return fract((p3.x + p3.y) * p3.z);
+}
+
+void fragment() {
+	float stitch_fade = 1.0 - smoothstep(0.25, 0.70, length(fwidth(UV * stitch_freq)));
+	float fiber_noise = hash12(floor(UV * fiber_freq)) * 2.0 - 1.0;
+	vec2 stitch_p = vec2(fract(UV.x * stitch_freq) - 0.5, (fract(UV.y * 3.0) - 0.5) * 4.5);
+	stitch_p.x -= clamp(stitch_p.x, -0.22, 0.22);
+	float stitch_mask = (1.0 - smoothstep(-0.04, 0.04, length(stitch_p) - 0.11)) * stitch_fade;
+	float fresnel_rim = pow(clamp(1.0 - clamp(dot(NORMAL, VIEW), 0.0, 1.0), 0.0, 1.0), rim_power);
+	vec3 felt_col = wool_tint.rgb + vec3(fiber_noise * 0.06) + vec3(fresnel_rim * 0.22);
+	ALBEDO = mix(felt_col, stitch_tint.rgb, stitch_mask);
+	ROUGHNESS = mix(0.92, 0.48, stitch_mask);
+	METALLIC = 0.02;
+	BACKLIGHT = wool_tint.rgb * subsurf_scatter;
+}
+"
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_tactile_wool"]
+render_priority = 0
+shader = SubResource("Shader_tactile_wool")
+shader_parameter/wool_tint = Color(0.86, 0.34, 0.24, 1)
+shader_parameter/stitch_tint = Color(0.97, 0.92, 0.78, 1)
+shader_parameter/rim_power = 3.0
+shader_parameter/subsurf_scatter = 0.48
+shader_parameter/fiber_freq = 140.0
+shader_parameter/stitch_freq = 18.0
+
+[sub_resource type="TorusMesh" id="TorusMesh_wool"]
+inner_radius = 0.32
+outer_radius = 0.68
+rings = 48
+ring_segments = 32
+
+[sub_resource type="Shader" id="Shader_foliage_cantilever"]
+code = "shader_type spatial;
+render_mode cull_disabled, specular_schlick_ggx;
+
+uniform float wind_strength : hint_range(0.0, 1.2) = 0.38;
+uniform float wind_speed : hint_range(0.5, 6.0) = 2.4;
+uniform float blade_length : hint_range(0.3, 2.0) = 0.95;
+uniform float lod_max_distance : hint_range(5.0, 80.0) = 32.0;
+uniform vec4 root_color : source_color = vec4(0.09, 0.26, 0.08, 1.0);
+uniform vec4 tip_color : source_color = vec4(0.44, 0.76, 0.22, 1.0);
+
+varying float v_height_t;
+varying float v_cam_dist;
+varying vec3 v_inst_tint;
+
+float bayer4x4(vec2 frag_coord) {
+	ivec2 p = ivec2(mod(frag_coord, 4.0));
+	const float bayer[16] = float[16](
+		0.0 / 16.0, 8.0 / 16.0, 2.0 / 16.0, 10.0 / 16.0,
+		12.0 / 16.0, 4.0 / 16.0, 14.0 / 16.0, 6.0 / 16.0,
+		3.0 / 16.0, 11.0 / 16.0, 1.0 / 16.0, 9.0 / 16.0,
+		15.0 / 16.0, 7.0 / 16.0, 13.0 / 16.0, 5.0 / 16.0
+	);
+	return bayer[p.y * 4 + p.x];
+}
+
+void vertex() {
+	float h_t = clamp(1.0 - UV.y, 0.0, 1.0);
+	float bend = h_t * h_t;
+	float phase = INSTANCE_CUSTOM.x + TIME * wind_speed;
+	float stiffness = max(INSTANCE_CUSTOM.y, 0.35);
+	vec2 disp_xz = vec2(sin(phase), cos(phase * 0.7)) * (wind_strength / stiffness) * bend;
+	float L = max(blade_length * max(INSTANCE_CUSTOM.z, 0.5), 0.2);
+	float disp_sq = min(dot(disp_xz, disp_xz), L * L * 0.88);
+	float conserved_y = sqrt(max(0.0001, L * L - disp_sq));
+	VERTEX.xz += disp_xz;
+	VERTEX.y = (VERTEX.y * L) - (L - conserved_y) * h_t;
+	NORMAL = normalize(vec3(-disp_xz.x * 0.65, 1.0, -disp_xz.y * 0.65));
+	vec3 world_origin = (MODEL_MATRIX * vec4(0.0, 0.0, 0.0, 1.0)).xyz;
+	v_cam_dist = length(INV_VIEW_MATRIX[3].xyz - world_origin);
+	v_height_t = h_t;
+	v_inst_tint = COLOR.rgb;
+}
+
+void fragment() {
+	float lod_vis = 1.0 - smoothstep(lod_max_distance * 0.70, lod_max_distance, v_cam_dist);
+	if (lod_vis < bayer4x4(FRAGCOORD.xy)) {
+		discard;
+	}
+	vec3 blade_col = mix(root_color.rgb, tip_color.rgb, v_height_t) * mix(vec3(1.0), v_inst_tint, 0.35);
+	ALBEDO = blade_col;
+	ROUGHNESS = mix(0.75, 0.38, v_height_t);
+	BACKLIGHT = tip_color.rgb * (v_height_t * 0.42);
+}
+"
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_foliage_cantilever"]
+render_priority = 0
+shader = SubResource("Shader_foliage_cantilever")
+shader_parameter/wind_strength = 0.38
+shader_parameter/wind_speed = 2.4
+shader_parameter/blade_length = 0.95
+shader_parameter/lod_max_distance = 32.0
+shader_parameter/root_color = Color(0.09, 0.26, 0.08, 1)
+shader_parameter/tip_color = Color(0.44, 0.76, 0.22, 1)
+
+[sub_resource type="QuadMesh" id="QuadMesh_blade"]
+size = Vector2(0.11, 1.0)
+subdivide_Depth = 1
+subdivide_height = 6
+center_offset = Vector3(0, 0.5, 0)
+
+[sub_resource type="MultiMesh" id="MultiMesh_foliage"]
+transform_format = 1
+use_colors = true
+use_custom_data = true
+mesh = SubResource("QuadMesh_blade")
+
+[sub_resource type="Shader" id="Shader_instance_batch"]
+code = "shader_type spatial;
+render_mode cull_disabled, specular_schlick_ggx;
+
+uniform float base_roughness : hint_range(0.05, 0.95) = 0.22;
+uniform float morph_amount : hint_range(0.0, 1.0) = 0.0;
+instance uniform vec4 instance_tint : source_color = vec4(0.95, 0.55, 0.15, 1.0);
+instance uniform float pulse_speed : hint_range(0.5, 8.0) = 2.0;
+
+void vertex() {
+	vec3 p = VERTEX;
+	float r = max(length(p), 0.0001);
+	vec3 dir = p / r;
+	float theta = atan(dir.x, dir.z);
+	float phi = acos(clamp(dir.y, -1.0, 1.0));
+	float arc_r = r * phi * 0.55;
+	vec3 flat_disc = vec3(arc_r * sin(theta), p.y * 0.18, arc_r * cos(theta));
+	VERTEX = mix(p, flat_disc, morph_amount);
+	NORMAL = normalize(mix(NORMAL, vec3(0.0, 1.0, 0.0), morph_amount * 0.75));
+}
+
+void fragment() {
+	float fresnel = pow(clamp(1.0 - clamp(dot(NORMAL, VIEW), 0.0, 1.0), 0.0, 1.0), 3.0);
+	float pulse = 0.5 + 0.5 * sin(TIME * pulse_speed + UV.y * 6.28318);
+	ALBEDO = instance_tint.rgb * (0.75 + 0.25 * pulse);
+	EMISSION = instance_tint.rgb * (fresnel * 0.55 + pulse * 0.18);
+	ROUGHNESS = base_roughness;
+	METALLIC = 0.65;
+}
+"
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_instance_batch"]
+render_priority = 0
+shader = SubResource("Shader_instance_batch")
+shader_parameter/base_roughness = 0.22
+shader_parameter/morph_amount = 0.0
+
+[sub_resource type="SphereMesh" id="SphereMesh_batch_orb"]
+radius = 0.32
+height = 0.64
+radial_segments = 32
+rings = 16
+
+[sub_resource type="Shader" id="Shader_canvas_sdf"]
+code = "shader_type canvas_item;
+
+uniform vec4 ring_color : source_color = vec4(0.22, 0.86, 1.0, 1.0);
+uniform vec4 core_color : source_color = vec4(0.95, 0.55, 0.18, 1.0);
+uniform float ring_frequency : hint_range(2.0, 16.0) = 6.0;
+uniform float bevel_radius : hint_range(0.15, 0.48) = 0.36;
+
+float sd_hex_flat(vec2 p, float r) {
+	const vec3 k = vec3(-0.866025404, 0.5, 0.577350269);
+	p = abs(p);
+	p -= 2.0 * min(dot(k.xy, p), 0.0) * k.xy;
+	p -= vec2(clamp(p.x, -k.z * r, k.z * r), r);
+	return length(p) * sign(p.y);
+}
+
+void fragment() {
+	vec2 p = UV - vec2(0.5);
+	float d_hex = sd_hex_flat(p, bevel_radius);
+	float ring_wave = 0.5 + 0.5 * sin(d_hex * ring_frequency * 6.28318 - TIME * 3.2);
+	float inside_mask = 1.0 - smoothstep(-0.02, 0.02, d_hex);
+	float rim_glow = exp(-abs(d_hex) * 14.0);
+	vec3 col = mix(ring_color.rgb * ring_wave, core_color.rgb, inside_mask * 0.65) + ring_color.rgb * rim_glow * 0.75;
+	COLOR = vec4(col, 0.95);
+}
+"
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_canvas_sdf"]
+shader = SubResource("Shader_canvas_sdf")
+shader_parameter/ring_color = Color(0.22, 0.86, 1, 1)
+shader_parameter/core_color = Color(0.95, 0.55, 0.18, 1)
+shader_parameter/ring_frequency = 6.0
+shader_parameter/bevel_radius = 0.36
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_focus_ring"]
+albedo_color = Color(0.25, 0.9, 1, 1)
+emission_enabled = true
+emission = Color(0.2, 0.82, 1, 1)
+emission_energy_multiplier = 2.2
+roughness = 0.25
+
+[sub_resource type="TorusMesh" id="TorusMesh_focus_ring"]
+inner_radius = 0.82
+outer_radius = 0.9
+rings = 48
+ring_segments = 16
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_hud_panel"]
+bg_color = Color(0.06, 0.08, 0.13, 0.93)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.22, 0.68, 0.92, 0.85)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+[node name="ModuleShadersAndCompute" type="Node3D"]
+script = ExtResource("1_shd")
+
+[node name="WaveMesh" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.1, -0.15, 1.4)
+extra_cull_margin = 1.5
+mesh = SubResource("PlaneMesh_subdivided")
+surface_material_override/0 = SubResource("ShaderMaterial_wave")
+
+[node name="WaveLabel3D" type="Label3D" parent="WaveMesh"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.95, 0)
+billboard = 1
+text = "0. WaveMesh (Analytic Normals)"
+font_size = 22
+outline_size = 6
+
+[node name="TerrainSphereMesh" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.2, 1.65, -0.4)
+extra_cull_margin = 1.5
+mesh = SubResource("SphereMesh_terrain")
+surface_material_override/0 = SubResource("ShaderMaterial_terrain_fbm")
+
+[node name="TerrainLabel3D" type="Label3D" parent="TerrainSphereMesh"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.05, 0)
+billboard = 1
+text = "1. NOISE_ROT 3D Ridge Terrain"
+font_size = 22
+outline_size = 6
+
+[node name="VoronoiMasonryMesh" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.85, 1.65, -0.4)
+extra_cull_margin = 1.5
+mesh = SubResource("CylinderMesh_masonry")
+surface_material_override/0 = SubResource("ShaderMaterial_voronoi_masonry")
+
+[node name="VoronoiLabel3D" type="Label3D" parent="VoronoiMasonryMesh"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.05, 0)
+billboard = 1
+text = "2. 5x5 Voronoi & Cotangent Frame"
+font_size = 22
+outline_size = 6
+
+[node name="TactileWoolMesh" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 0.866025, -0.5, 0, 0.5, 0.866025, 3.9, 1.65, -0.4)
+extra_cull_margin = 1.5
+mesh = SubResource("TorusMesh_wool")
+surface_material_override/0 = SubResource("ShaderMaterial_tactile_wool")
+
+[node name="WoolLabel3D" type="Label3D" parent="TactileWoolMesh"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.05, 0)
+billboard = 1
+text = "3. Tactile Wool SSS & Fresnel"
+font_size = 22
+outline_size = 6
+
+[node name="FoliageMultiMesh" type="MultiMeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.85, -0.55, 1.4)
+extra_cull_margin = 1.5
+material_override = SubResource("ShaderMaterial_foliage_cantilever")
+multimesh = SubResource("MultiMesh_foliage")
+
+[node name="FoliageLabel3D" type="Label3D" parent="FoliageMultiMesh"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.35, 0)
+billboard = 1
+text = "4. Cantilever Foliage (20-Float MM)"
+font_size = 22
+outline_size = 6
+
+[node name="InstanceBatchGroup" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3.8, -0.1, 1.4)
+
+[node name="BatchOrb0" type="MeshInstance3D" parent="InstanceBatchGroup"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.48, 0.15, 0)
+extra_cull_margin = 1.5
+mesh = SubResource("SphereMesh_batch_orb")
+surface_material_override/0 = SubResource("ShaderMaterial_instance_batch")
+
+[node name="BatchOrb1" type="MeshInstance3D" parent="InstanceBatchGroup"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.35, -0.22)
+extra_cull_margin = 1.5
+mesh = SubResource("SphereMesh_batch_orb")
+surface_material_override/0 = SubResource("ShaderMaterial_instance_batch")
+
+[node name="BatchOrb2" type="MeshInstance3D" parent="InstanceBatchGroup"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.48, 0.15, 0)
+extra_cull_margin = 1.5
+mesh = SubResource("SphereMesh_batch_orb")
+surface_material_override/0 = SubResource("ShaderMaterial_instance_batch")
+
+[node name="BatchLabel3D" type="Label3D" parent="InstanceBatchGroup"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.95, 0)
+billboard = 1
+text = "5. Instance Uniforms & 2D SDF"
+font_size = 22
+outline_size = 6
+
+[node name="StationFocusRing" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.1, -0.45, 1.4)
+mesh = SubResource("TorusMesh_focus_ring")
+surface_material_override/0 = SubResource("StandardMaterial3D_focus_ring")
+
+[node name="ShaderPlaygroundHUD" type="CanvasLayer" parent="."]
+visible = false
+
+[node name="MainPanel" type="Panel" parent="ShaderPlaygroundHUD"]
+offset_left = 20.0
+offset_top = 112.0
+offset_right = 452.0
+offset_bottom = 636.0
+theme_override_styles/panel = SubResource("StyleBoxFlat_hud_panel")
+
+[node name="StationTitleLabel" type="Label" parent="ShaderPlaygroundHUD/MainPanel"]
+layout_mode = 0
+offset_left = 14.0
+offset_top = 10.0
+offset_right = 338.0
+offset_bottom = 52.0
+theme_override_colors/font_color = Color(0.35, 0.9, 1, 1)
+theme_override_font_sizes/font_size = 14
+text = "Station 0: WaveMesh (spatial)"
+autowrap_mode = 3
+
+[node name="2DShaderRect" type="ColorRect" parent="ShaderPlaygroundHUD/MainPanel"]
+material = SubResource("ShaderMaterial_canvas_sdf")
+layout_mode = 0
+offset_left = 348.0
+offset_top = 10.0
+offset_right = 418.0
+offset_bottom = 80.0
+
+[node name="SwatchCaption" type="Label" parent="ShaderPlaygroundHUD/MainPanel"]
+layout_mode = 0
+offset_left = 344.0
+offset_top = 81.0
+offset_right = 422.0
+offset_bottom = 99.0
+theme_override_colors/font_color = Color(0.75, 0.85, 0.95, 1)
+theme_override_font_sizes/font_size = 10
+text = "2D SDF Hex"
+horizontal_alignment = 1
+
+[node name="PrevStationBtn" type="Button" parent="ShaderPlaygroundHUD/MainPanel"]
+layout_mode = 0
+offset_left = 14.0
+offset_top = 56.0
+offset_right = 116.0
+offset_bottom = 86.0
+theme_override_font_sizes/font_size = 12
+text = "< Prev Station"
+
+[node name="NextStationBtn" type="Button" parent="ShaderPlaygroundHUD/MainPanel"]
+layout_mode = 0
+offset_left = 122.0
+offset_top = 56.0
+offset_right = 226.0
+offset_bottom = 86.0
+theme_override_font_sizes/font_size = 12
+text = "Next Station >"
+
+[node name="NextElementBtn" type="Button" parent="ShaderPlaygroundHUD/MainPanel"]
+layout_mode = 0
+offset_left = 232.0
+offset_top = 56.0
+offset_right = 340.0
+offset_bottom = 86.0
+theme_override_font_sizes/font_size = 12
+text = "Next Element"
+
+[node name="ElementTitleLabel" type="Label" parent="ShaderPlaygroundHUD/MainPanel"]
+layout_mode = 0
+offset_left = 14.0
+offset_top = 98.0
+offset_right = 418.0
+offset_bottom = 142.0
+theme_override_colors/font_color = Color(1, 0.84, 0.32, 1)
+theme_override_font_sizes/font_size = 12
+text = "Element [0/6]: 0: Pipeline & render_mode"
+autowrap_mode = 3
+
+[node name="ExplanationLabel" type="Label" parent="ShaderPlaygroundHUD/MainPanel"]
+layout_mode = 0
+offset_left = 14.0
+offset_top = 146.0
+offset_right = 418.0
+offset_bottom = 266.0
+theme_override_colors/font_color = Color(0.9, 0.94, 0.98, 1)
+theme_override_font_sizes/font_size = 12
+text = "Shader element explanation..."
+autowrap_mode = 3
+
+[node name="CodeHeaderLabel" type="Label" parent="ShaderPlaygroundHUD/MainPanel"]
+layout_mode = 0
+offset_left = 14.0
+offset_top = 268.0
+offset_right = 418.0
+offset_bottom = 288.0
+theme_override_colors/font_color = Color(0.55, 0.85, 0.65, 1)
+theme_override_font_sizes/font_size = 11
+text = "GLSL / GDScript Element Anatomy:"
+
+[node name="CodeSnippetLabel" type="Label" parent="ShaderPlaygroundHUD/MainPanel"]
+layout_mode = 0
+offset_left = 14.0
+offset_top = 290.0
+offset_right = 418.0
+offset_bottom = 446.0
+theme_override_colors/font_color = Color(0.72, 0.96, 0.78, 1)
+theme_override_font_sizes/font_size = 11
+text = "shader_type spatial;"
+autowrap_mode = 3
+
+[node name="CyclePresetBtn" type="Button" parent="ShaderPlaygroundHUD/MainPanel"]
+layout_mode = 0
+offset_left = 14.0
+offset_top = 454.0
+offset_right = 195.0
+offset_bottom = 484.0
+theme_override_font_sizes/font_size = 12
+text = "Cycle Live Preset (0)"
+
+[node name="SliderCaptionLabel" type="Label" parent="ShaderPlaygroundHUD/MainPanel"]
+layout_mode = 0
+offset_left = 205.0
+offset_top = 458.0
+offset_right = 418.0
+offset_bottom = 480.0
+theme_override_colors/font_color = Color(0.82, 0.88, 0.96, 1)
+theme_override_font_sizes/font_size = 11
+text = "Primary Uniform Scale: 4.00"
+
+[node name="FrequencySlider" type="HSlider" parent="ShaderPlaygroundHUD/MainPanel"]
+layout_mode = 0
+offset_left = 14.0
+offset_top = 490.0
+offset_right = 418.0
+offset_bottom = 514.0
+min_value = 1.0
+max_value = 10.0
+step = 0.25
+value = 4.0

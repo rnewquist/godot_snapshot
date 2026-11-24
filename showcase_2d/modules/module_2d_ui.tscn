@@ -1,0 +1,315 @@
+[gd_scene load_steps=6 format=3]
+
+[ext_resource type="Script" path="res://modules/module_2d_ui.gd" id="1_ui"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_panel"]
+bg_color = Color(0.1, 0.12, 0.18, 0.96)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+shadow_color = Color(0, 0, 0, 0.4)
+shadow_size = 8
+shadow_offset = Vector2(0, 4)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_btn"]
+bg_color = Color(0.2, 0.5, 0.85, 1)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_right = 6
+corner_radius_bottom_left = 6
+
+[sub_resource type="Gradient" id="Gradient_tex"]
+colors = PackedColorArray(0.2, 0.6, 0.9, 1, 0.9, 0.3, 0.6, 1)
+
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_sample"]
+gradient = SubResource("Gradient_tex")
+width = 48
+height = 48
+
+[node name="Module2DUI" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_ui")
+
+[node name="Title" type="Label" parent="."]
+layout_mode = 0
+offset_left = 50.0
+offset_top = 65.0
+offset_right = 950.0
+offset_bottom = 95.0
+theme_override_font_sizes/font_size = 18
+text = "2D UI Architecture: 10 Containers & 24 Core Interactive Widgets"
+
+[node name="MainPanel" type="Panel" parent="."]
+layout_mode = 0
+offset_left = 40.0
+offset_top = 105.0
+offset_right = 1110.0
+offset_bottom = 605.0
+theme_override_styles/panel = SubResource("StyleBoxFlat_panel")
+
+[node name="Margin" type="MarginContainer" parent="MainPanel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 15
+theme_override_constants/margin_top = 15
+theme_override_constants/margin_right = 15
+theme_override_constants/margin_bottom = 15
+
+[node name="VSplit" type="VSplitContainer" parent="MainPanel/Margin"]
+layout_mode = 2
+split_offset = 380
+
+[node name="TabContainer" type="TabContainer" parent="MainPanel/Margin/VSplit"]
+layout_mode = 2
+current_tab = 0
+
+[node name="Controls & Toggles" type="HSplitContainer" parent="MainPanel/Margin/VSplit/TabContainer"]
+layout_mode = 2
+metadata/_tab_index = 0
+
+[node name="LeftScroll" type="ScrollContainer" parent="MainPanel/Margin/VSplit/TabContainer/Controls & Toggles"]
+custom_minimum_size = Vector2(500, 0)
+layout_mode = 2
+
+[node name="LeftVBox" type="VBoxContainer" parent="MainPanel/Margin/VSplit/TabContainer/Controls & Toggles/LeftScroll"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 10
+
+[node name="Grid" type="GridContainer" parent="MainPanel/Margin/VSplit/TabContainer/Controls & Toggles/LeftScroll/LeftVBox"]
+layout_mode = 2
+theme_override_constants/h_separation = 16
+theme_override_constants/v_separation = 10
+columns = 2
+
+[node name="BtnLbl" type="Label" parent="MainPanel/Margin/VSplit/TabContainer/Controls & Toggles/LeftScroll/LeftVBox/Grid"]
+layout_mode = 2
+text = "Button:"
+
+[node name="TestButton" type="Button" parent="MainPanel/Margin/VSplit/TabContainer/Controls & Toggles/LeftScroll/LeftVBox/Grid"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(180, 32)
+layout_mode = 2
+theme_override_styles/normal = SubResource("StyleBoxFlat_btn")
+text = "Click Me"
+
+[node name="CheckLbl" type="Label" parent="MainPanel/Margin/VSplit/TabContainer/Controls & Toggles/LeftScroll/LeftVBox/Grid"]
+layout_mode = 2
+text = "CheckBox:"
+
+[node name="CheckBox" type="CheckBox" parent="MainPanel/Margin/VSplit/TabContainer/Controls & Toggles/LeftScroll/LeftVBox/Grid"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Enable Physics Sync"
+
+[node name="ToggleLbl" type="Label" parent="MainPanel/Margin/VSplit/TabContainer/Controls & Toggles/LeftScroll/LeftVBox/Grid"]
+layout_mode = 2
+text = "CheckButton:"
+
+[node name="CheckButton" type="CheckButton" parent="MainPanel/Margin/VSplit/TabContainer/Controls & Toggles/LeftScroll/LeftVBox/Grid"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Power Grid Active"
+
+[node name="OptionLbl" type="Label" parent="MainPanel/Margin/VSplit/TabContainer/Controls & Toggles/LeftScroll/LeftVBox/Grid"]
+layout_mode = 2
+text = "OptionButton:"
+
+[node name="OptionButton" type="OptionButton" parent="MainPanel/Margin/VSplit/TabContainer/Controls & Toggles/LeftScroll/LeftVBox/Grid"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(180, 30)
+layout_mode = 2
+
+[node name="MenuLbl" type="Label" parent="MainPanel/Margin/VSplit/TabContainer/Controls & Toggles/LeftScroll/LeftVBox/Grid"]
+layout_mode = 2
+text = "MenuButton:"
+
+[node name="MenuButton" type="MenuButton" parent="MainPanel/Margin/VSplit/TabContainer/Controls & Toggles/LeftScroll/LeftVBox/Grid"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(180, 30)
+layout_mode = 2
+text = "Options Menu"
+flat = false
+
+[node name="ColorPickLbl" type="Label" parent="MainPanel/Margin/VSplit/TabContainer/Controls & Toggles/LeftScroll/LeftVBox/Grid"]
+layout_mode = 2
+text = "ColorPickerButton:"
+
+[node name="ColorPickerButton" type="ColorPickerButton" parent="MainPanel/Margin/VSplit/TabContainer/Controls & Toggles/LeftScroll/LeftVBox/Grid"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(180, 30)
+layout_mode = 2
+color = Color(0.2, 0.7, 0.9, 1)
+
+[node name="LinkLbl" type="Label" parent="MainPanel/Margin/VSplit/TabContainer/Controls & Toggles/LeftScroll/LeftVBox/Grid"]
+layout_mode = 2
+text = "LinkButton:"
+
+[node name="LinkButton" type="LinkButton" parent="MainPanel/Margin/VSplit/TabContainer/Controls & Toggles/LeftScroll/LeftVBox/Grid"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 4
+text = "godotengine.org"
+uri = "https://godotengine.org"
+
+[node name="TexBtnLbl" type="Label" parent="MainPanel/Margin/VSplit/TabContainer/Controls & Toggles/LeftScroll/LeftVBox/Grid"]
+layout_mode = 2
+text = "TextureButton:"
+
+[node name="TextureButton" type="TextureButton" parent="MainPanel/Margin/VSplit/TabContainer/Controls & Toggles/LeftScroll/LeftVBox/Grid"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(36, 36)
+layout_mode = 2
+texture_normal = SubResource("GradientTexture2D_sample")
+
+[node name="RightVBox" type="VBoxContainer" parent="MainPanel/Margin/VSplit/TabContainer/Controls & Toggles"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 12
+
+[node name="HBoxFlow" type="HFlowContainer" parent="MainPanel/Margin/VSplit/TabContainer/Controls & Toggles/RightVBox"]
+layout_mode = 2
+
+[node name="SpinBoxLbl" type="Label" parent="MainPanel/Margin/VSplit/TabContainer/Controls & Toggles/RightVBox/HBoxFlow"]
+layout_mode = 2
+text = "SpinBox: "
+
+[node name="SpinBox" type="SpinBox" parent="MainPanel/Margin/VSplit/TabContainer/Controls & Toggles/RightVBox/HBoxFlow"]
+unique_name_in_owner = true
+layout_mode = 2
+min_value = 1.0
+max_value = 100.0
+value = 42.0
+
+[node name="SliderHBox" type="HBoxContainer" parent="MainPanel/Margin/VSplit/TabContainer/Controls & Toggles/RightVBox"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="VSlider" type="VSlider" parent="MainPanel/Margin/VSplit/TabContainer/Controls & Toggles/RightVBox/SliderHBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 120)
+layout_mode = 2
+value = 50.0
+
+[node name="VScrollBar" type="VScrollBar" parent="MainPanel/Margin/VSplit/TabContainer/Controls & Toggles/RightVBox/SliderHBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(16, 120)
+layout_mode = 2
+
+[node name="SlidersSubVBox" type="VBoxContainer" parent="MainPanel/Margin/VSplit/TabContainer/Controls & Toggles/RightVBox/SliderHBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 10
+
+[node name="HSlider" type="HSlider" parent="MainPanel/Margin/VSplit/TabContainer/Controls & Toggles/RightVBox/SliderHBox/SlidersSubVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+value = 65.0
+
+[node name="ProgressBar" type="ProgressBar" parent="MainPanel/Margin/VSplit/TabContainer/Controls & Toggles/RightVBox/SliderHBox/SlidersSubVBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 24)
+layout_mode = 2
+value = 65.0
+
+[node name="HScrollBar" type="HScrollBar" parent="MainPanel/Margin/VSplit/TabContainer/Controls & Toggles/RightVBox/SliderHBox/SlidersSubVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="CenterBox" type="CenterContainer" parent="MainPanel/Margin/VSplit/TabContainer/Controls & Toggles/RightVBox"]
+layout_mode = 2
+
+[node name="ColorRect" type="ColorRect" parent="MainPanel/Margin/VSplit/TabContainer/Controls & Toggles/RightVBox/CenterBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(160, 24)
+layout_mode = 2
+color = Color(0.15, 0.45, 0.75, 1)
+
+[node name="AspectBox" type="AspectRatioContainer" parent="MainPanel/Margin/VSplit/TabContainer/Controls & Toggles/RightVBox"]
+layout_mode = 2
+ratio = 2.0
+
+[node name="TextureRect" type="TextureRect" parent="MainPanel/Margin/VSplit/TabContainer/Controls & Toggles/RightVBox/AspectBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(64, 32)
+layout_mode = 2
+texture = SubResource("GradientTexture2D_sample")
+expand_mode = 1
+
+[node name="Text & Editors" type="VBoxContainer" parent="MainPanel/Margin/VSplit/TabContainer"]
+visible = false
+layout_mode = 2
+theme_override_constants/separation = 8
+metadata/_tab_index = 1
+
+[node name="LineEdit" type="LineEdit" parent="MainPanel/Margin/VSplit/TabContainer/Text & Editors"]
+unique_name_in_owner = true
+layout_mode = 2
+placeholder_text = "Type text to test LineEdit..."
+
+[node name="RichTextLabel" type="RichTextLabel" parent="MainPanel/Margin/VSplit/TabContainer/Text & Editors"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 48)
+layout_mode = 2
+bbcode_enabled = true
+text = "[b]RichTextLabel[/b] with [color=yellow]formatted[/color] BBCode syntax support."
+
+[node name="TextSplit" type="HSplitContainer" parent="MainPanel/Margin/VSplit/TabContainer/Text & Editors"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="TextEdit" type="TextEdit" parent="MainPanel/Margin/VSplit/TabContainer/Text & Editors/TextSplit"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Multi-line TextEdit input..."
+
+[node name="CodeEdit" type="CodeEdit" parent="MainPanel/Margin/VSplit/TabContainer/Text & Editors/TextSplit"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+text = "# Sample CodeEdit\nfunc _ready() -> void:\n\tprint(\"Initialized!\")\n"
+
+[node name="Collections & Trees" type="HSplitContainer" parent="MainPanel/Margin/VSplit/TabContainer"]
+visible = false
+layout_mode = 2
+metadata/_tab_index = 2
+
+[node name="Tree" type="Tree" parent="MainPanel/Margin/VSplit/TabContainer/Collections & Trees"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="ItemList" type="ItemList" parent="MainPanel/Margin/VSplit/TabContainer/Collections & Trees"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="FooterVBox" type="VBoxContainer" parent="MainPanel/Margin/VSplit"]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="TabBar" type="TabBar" parent="MainPanel/Margin/VSplit/FooterVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+tab_count = 3
+tab_0/title = "Overview"
+tab_1/title = "Diagnostics"
+tab_2/title = "Console"
+
+[node name="OutputLabel" type="Label" parent="MainPanel/Margin/VSplit/FooterVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.3, 0.9, 0.5, 1)
+text = "Ready. Interacting with controls triggers live event handlers."
+horizontal_alignment = 1
